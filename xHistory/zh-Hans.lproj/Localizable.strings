@@ -66,5 +66,11 @@
 "Custom Configuration (for Bash & Zsh)"= "启用自定义配置 (针对 Bash 和 Zsh)";
 "Real-time History Saving" = "实时保存历史记录";
 "Ignore Consecutive Duplicates" = "忽略连续的重复记录";
-"Maximum Number of Histories" = "最大保存数量 (行数)";
+"Maximum Number of History Items" = "历史记录保存数量";
 "Quit" = "退出";
+"These settings will only take effect in newly logged-in shells when you modify them." = "当你修改这些配置后, 需要新登录的 Shell 才会生效.";
+"Blacklist" = "屏蔽列表";
+"The following commands will be ignored from the history." = "下列命令将会从历史记录中被忽略.";
+"Enter Command" = "输入命令";
+"Add to List" = "添加到列表";
+"Cancel" = "取消";

@@ -30,35 +30,15 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         }
     }
     
-    func createEmptyFile(at fileURL: URL) throws {
-        if !fd.fileExists(atPath: fileURL.path) {
-            do {
-                try fd.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
-                fd.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
-            } catch {
-                print("Cannot create data file: \(error)")
-            }
-        }
-    }
-    
-    func appendLine(to fileURL: URL, line: String) throws {
-        let newLine = line + "\n"
-        
-        if let fileHandle = FileHandle(forWritingAtPath: fileURL.path) {
-            defer { fileHandle.closeFile() }
-            fileHandle.seekToEndOfFile()
-            if let data = newLine.data(using: .utf8) { fileHandle.write(data) }
-        } else {
-            try newLine.write(to: fileURL, atomically: true, encoding: .utf8)
-        }
-    }
-    
     func readHistory(file: String? = nil) -> [String] {
         @AppStorage("historyFile") var historyFile = "~/.bash_history"
         @AppStorage("noSameLine") var noSameLine = true
+        let blockedItems = (ud.object(forKey: "blockedCommands") as? [String]) ?? []
         
         let fileURL = historyFile.absolutePath.url
-        let lines = fileURL.readHistory?.components(separatedBy: .newlines).filter({ !$0.trimmingCharacters(in: .whitespaces).isEmpty })  ?? []
+        var lines = fileURL.readHistory?.components(separatedBy: .newlines).map({ $0.trimmingCharacters(in: .whitespaces) }) ?? []
+        lines = lines.filter({ !$0.trimmingCharacters(in: .whitespaces).isEmpty })
+        lines.removeAll(where: { blockedItems.contains($0) })
         if noSameLine { return lines.removingAdjacentDuplicates() }
         return lines
     }

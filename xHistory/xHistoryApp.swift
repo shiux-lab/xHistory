@@ -38,38 +38,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("statusBar") var statusBar = true
     @AppStorage("showPinned") var showPinned = false
-    @AppStorage("customShellConfig") var customShellConfig = true
-    @AppStorage("historyLimit") var historyLimit = 1000
-    @AppStorage("noDuplicates") var noDuplicates = true
-    @AppStorage("realtimeSave") var realtimeSave = true
     
     func applicationWillFinishLaunching(_ notification: Notification) {
-        ud.set(customShellConfig, forKey: "customShellConfig")
-        ud.set(historyLimit, forKey: "historyLimit")
-        ud.set(noDuplicates, forKey: "noDuplicates")
-        ud.set(realtimeSave, forKey: "realtimeSave")
-        ud.synchronize()
+        updateShellConfig()
+        ud.register(defaults: ["blockedCommands": ["xhistory"]])
         let bashrc = homeDirectory.appendingPathComponent(".bash_profile")
         let zshrc = homeDirectory.appendingPathComponent(".zshrc")
-        try? HistoryCopyer.shared.createEmptyFile(at: bashrc)
-        try? HistoryCopyer.shared.createEmptyFile(at: zshrc)
+        try? createEmptyFile(at: bashrc)
+        try? createEmptyFile(at: zshrc)
         if let resourceURL = Bundle.main.resourceURL {
             let command = resourceURL.appendingPathComponent("xh").path
             if !(bashrc.readHistory ?? "").contains(command) {
-                try? HistoryCopyer.shared.appendLine(to: bashrc, line: "\neval $(\(command) -c bash 2>/dev/null)")
+                try? appendLine(to: bashrc, line: "\neval $(\(command) -c bash 2>/dev/null)")
             }
             if !(zshrc.readHistory ?? "").contains(command) {
-                try? HistoryCopyer.shared.appendLine(to: zshrc, line: "\neval $(\(command) -c zsh 2>/dev/null)")
+                try? appendLine(to: zshrc, line: "\neval $(\(command) -c zsh 2>/dev/null)")
             }
         }
         
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURLEvent(_:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
-        if let appSupportDir = fd.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
-            let appFolder = appSupportDir.appendingPathComponent(Bundle.main.appName)
-            if !fd.fileExists(atPath: appFolder.path) {
-                try? fd.createDirectory(at: appFolder, withIntermediateDirectories: true, attributes: nil)
-            }
-        }
+        
         /*UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error { print("⚠️ Notification authorization denied: \(error.localizedDescription)") }
         }
@@ -211,6 +199,52 @@ func getMenuBarHeight() -> CGFloat {
         return screen.frame.height - screen.visibleFrame.height - (screen.visibleFrame.origin.y - screen.frame.origin.y) - 1
     }
     return 0.0
+}
+
+func createEmptyFile(at fileURL: URL) throws {
+    if !fd.fileExists(atPath: fileURL.path) {
+        do {
+            try fd.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+            fd.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+        } catch {
+            print("Cannot create data file: \(error)")
+        }
+    }
+}
+
+func appendLine(to fileURL: URL, line: String) throws {
+    let newLine = line + "\n"
+    
+    if let fileHandle = FileHandle(forWritingAtPath: fileURL.path) {
+        defer { fileHandle.closeFile() }
+        fileHandle.seekToEndOfFile()
+        if let data = newLine.data(using: .utf8) { fileHandle.write(data) }
+    } else {
+        try newLine.write(to: fileURL, atomically: true, encoding: .utf8)
+    }
+}
+
+func updateShellConfig() {
+    @AppStorage("customShellConfig") var customShellConfig = true
+    @AppStorage("historyLimit") var historyLimit = 1000
+    @AppStorage("noDuplicates") var noDuplicates = true
+    @AppStorage("realtimeSave") var realtimeSave = true
+    
+    let data: [String: Any] = [
+        "customShellConfig": customShellConfig,
+        "historyLimit": historyLimit,
+        "noDuplicates": noDuplicates,
+        "realtimeSave": realtimeSave
+    ]
+    if let appSupportDir = fd.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+        let appFolder = appSupportDir.appendingPathComponent(Bundle.main.appName)
+        let plistURL = appFolder.appendingPathComponent("shellConfig.plist")
+        if !fd.fileExists(atPath: appFolder.path) {
+            try? fd.createDirectory(at: appFolder, withIntermediateDirectories: true, attributes: nil)
+        }
+        let plistData = try? PropertyListSerialization.data(fromPropertyList: data, format: .xml, options: 0)
+        try? plistData?.write(to: plistURL)
+    }
 }
 
 func tips(_ message: String, title: String? = nil, id: String, switchButton: Bool = false, width: Int? = nil, action: (() -> Void)? = nil) {

@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "gear@1x.png",
+      "filename" : "blacklist@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "gear.png",
+      "filename" : "blacklist.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

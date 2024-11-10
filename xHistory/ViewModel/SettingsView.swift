@@ -28,6 +28,9 @@ struct SettingsView: View {
                 NavigationLink(destination: ShellView(), tag: "Shell", selection: $selectedItem) {
                     Label("Shell", image: "shell")
                 }
+                NavigationLink(destination: BlacklistView(), tag: "Blacklist", selection: $selectedItem) {
+                    Label("Blacklist", image: "block")
+                }
             }
             .listStyle(.sidebar)
             .padding(.top, 9)
@@ -93,7 +96,7 @@ struct GeneralView: View {
                     SSlider(label: "History Panel Opacity", value: $panelOpacity, range: 10...100, width: 160)
                     Text("\(panelOpacity)%").frame(width: 35)
                 }
-            }.onChange(of: statusBar) { newValue in statusBarItem.isVisible = newValue }
+            }
             SGroupBox(label: "Update") { UpdaterSettingsView(updater: updaterController.updater) }
             VStack(spacing: 8) {
                 CheckForUpdatesView(updater: updaterController.updater)
@@ -103,7 +106,7 @@ struct GeneralView: View {
                         .foregroundColor(.secondary)
                 }
             }
-        }
+        }.onChange(of: statusBar) { newValue in statusBarItem.isVisible = newValue }
     }
 }
 
@@ -114,6 +117,7 @@ struct HistoryView: View {
     @AppStorage("noSameLine") var noSameLine = true
     @AppStorage("highlighting") var highlighting = true
     
+    @State private var disabled: Bool = false
     @State private var styleChanged: Bool = false
     @State private var functionColor: Color = ud.color(forKey: "functionColor") ?? Color(nsColor: .systemOrange)
     @State private var keywordColor: Color = ud.color(forKey: "keywordColor") ?? Color(nsColor: .systemPink)
@@ -201,8 +205,12 @@ struct HistoryView: View {
                     CS(tips: "The color of numbers in the code", name: "numberColor", selection: $numberColor, styleChanged: $styleChanged)
                 }
                 .frame(height: 16)
-                .disabled(!highlighting)
-            }.onChange(of: highlighting) { _ in reHeight() }
+                .padding(.bottom, 3)
+                .disabled(disabled)
+            }
+        }.onChange(of: highlighting) { newValue in
+            disabled = !newValue
+            reHeight()
         }
     }
     
@@ -248,19 +256,29 @@ struct ShellView: View {
     @AppStorage("historyLimit") var historyLimit = 1000
     @AppStorage("noDuplicates") var noDuplicates = true
     @AppStorage("realtimeSave") var realtimeSave = true
+    @State private var disabled: Bool = false
     
     var body: some View {
         SForm(spacing: 10) {
-            SGroupBox(label: "Shell Configuration") {
-                SToggle("Custom Configuration (for Bash & Zsh)", isOn: $customShellConfig)
-                SDivider()
-                Group {
-                    SToggle("Real-time History Saving", isOn: $realtimeSave)
+            GroupBox(label:
+            VStack(alignment: .leading) {
+                Text("Shell Configuration").font(.headline)
+                Text("These settings will only take effect in newly logged-in shells when you modify them.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            ) {
+                VStack(spacing: 10) {
+                    SToggle("Custom Configuration (for Bash & Zsh)", isOn: $customShellConfig)
                     SDivider()
-                    SToggle("Ignore Consecutive Duplicates", isOn: $noDuplicates)
-                    SDivider()
-                    SSteper("Maximum Number of Histories", value: $historyLimit, min: 1, max: 10000, width: 60)
-                }.disabled(!customShellConfig)
+                    Group {
+                        SToggle("Real-time History Saving", isOn: $realtimeSave)
+                        SDivider()
+                        SToggle("Ignore Consecutive Duplicates", isOn: $noDuplicates)
+                        SDivider()
+                        SSteper("Maximum Number of History Items", value: $historyLimit, min: 1, max: 10000, width: 60)
+                    }.disabled(disabled)
+                }.padding(5)
             }
             SGroupBox {
                 SButton("Command Line Tool", buttonTitle: cltInstalled ? "Uninstall" : "Install",
@@ -273,12 +291,91 @@ struct ShellView: View {
                 }.onAppear { cltInstalled = CommandLineTool.isInstalled() }
             }
         }
+        .onChange(of: customShellConfig) { newValue in
+            disabled = !newValue
+            updateShellConfig()
+        }
+        .onChange(of: realtimeSave) { _ in updateShellConfig() }
+        .onChange(of: noDuplicates) { _ in updateShellConfig() }
+        .onChange(of: historyLimit) { _ in updateShellConfig() }
     }
     
     func updateCTL() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             cltInstalled = CommandLineTool.isInstalled()
         }
+    }
+}
+
+struct BlacklistView: View {
+    @State private var blockedItems = [String]()
+    @State private var temp = ""
+    @State private var showSheet = false
+    @State private var editingIndex: Int?
+    
+    var body: some View {
+        VStack {
+            GroupBox(label:
+                        VStack(alignment: .leading) {
+                Text("Blacklist").font(.headline)
+                Text("The following commands will be ignored from the history.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            ) {
+                VStack(spacing: 10) {
+                    ZStack(alignment: Alignment(horizontal: .trailing, vertical: .bottom)) {
+                        List {
+                            ForEach(0..<blockedItems.count, id: \.self) { index in
+                                HStack {
+                                    Image(systemName: "minus.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.red)
+                                        .onTapGesture { if editingIndex == nil { blockedItems.remove(at: index) } }
+                                    Text(blockedItems[index])
+                                }
+                            }
+                        }
+                        Button(action: {
+                            showSheet = true
+                        }) {
+                            Image(systemName: "plus.square.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .sheet(isPresented: $showSheet){
+                            VStack {
+                                TextField("Enter Command".local, text: $temp).frame(width: 300)
+                                HStack(spacing: 20) {
+                                    Button {
+                                        if temp == "" { return }
+                                        if !blockedItems.contains(temp) { blockedItems.append(temp) }
+                                        temp = ""
+                                        showSheet = false
+                                    } label: {
+                                        Text("Add to List").frame(width: 80)
+                                    }.keyboardShortcut(.defaultAction)
+                                    Button {
+                                        showSheet = false
+                                    } label: {
+                                        Text("Cancel").frame(width: 80)
+                                    }
+                                }.padding(.top, 10)
+                            }.padding()
+                        }
+                    }
+                }
+                .padding(5)
+                .onAppear { blockedItems = (ud.object(forKey: "blockedCommands") as? [String]) ?? [] }
+                .onChange(of: blockedItems) {
+                    b in ud.setValue(b, forKey: "blockedCommands")
+                    HistoryCopyer.shared.updateHistory()
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
     }
 }
 

@@ -31,7 +31,8 @@ struct xhistory: ParsableCommand {
             return
         }
         if let shell = config {
-            let plistPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("/Library/Preferences/com.lihaoyun6.xHistory.plist").path
+            guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+            let plistPath = appSupportDir.appendingPathComponent("xHistory/shellConfig.plist").path
             if let config = readPlistValue(filePath: plistPath, key: "customShellConfig") as? Bool, config {
                 if let value = readPlistValue(filePath: plistPath, key: "historyLimit") { print("export HISTSIZE=\(value)") }
                 if let value = readPlistValue(filePath: plistPath, key: "realtimeSave") as? Bool, value {
