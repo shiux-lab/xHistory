@@ -171,6 +171,7 @@ struct ContentView: View {
                 showPinned = false
             } , onWindowClose: {
                 self.scrollToTop.toggle()
+                self.keyWord = ""
             })
         )
         .padding(.top, fromMenubar ? 0 : -28)
