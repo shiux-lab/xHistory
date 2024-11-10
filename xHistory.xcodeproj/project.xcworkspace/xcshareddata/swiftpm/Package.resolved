@@ -1,0 +1,69 @@
+{
+  "originHash" : "adb62b15fd29352c871a2d87bb59e504fbe6b96dad95842bceef586d7ab7152c",
+  "pins" : [
+    {
+      "identity" : "keyboardshortcuts",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sindresorhus/KeyboardShortcuts",
+      "state" : {
+        "revision" : "c3c361f409b8dbe1eab186078b41c330a6a82c9a",
+        "version" : "2.2.2"
+      }
+    },
+    {
+      "identity" : "matrixcolorselector",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lihaoyun6/MatrixColorSelector.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1f68adbfd1c3f876d3cf3ba0600adeb08621cb88"
+      }
+    },
+    {
+      "identity" : "sfsmonitor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ClassicalDude/SFSMonitor.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "b221b6a8ea7d521b0b35da60b60c67ac3f6c08cd"
+      }
+    },
+    {
+      "identity" : "sparkle",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sparkle-project/Sparkle",
+      "state" : {
+        "revision" : "0ef1ee0220239b3776f433314515fd849025673f",
+        "version" : "2.6.4"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "swifttreesitter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ChimeHQ/SwiftTreeSitter.git",
+      "state" : {
+        "revision" : "2599e95310b3159641469d8a21baf2d3d200e61f",
+        "version" : "0.8.0"
+      }
+    },
+    {
+      "identity" : "tree-sitter-bash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tree-sitter/tree-sitter-bash.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "597a5ed6ed4d932fd44697feec988f977081ae59"
+      }
+    }
+  ],
+  "version" : 3
+}

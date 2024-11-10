@@ -1,0 +1,70 @@
+/* 
+  Localizable.strings
+  xHistory
+
+  Created by apple on 2024/11/8.
+  
+*/
+
+"OK" = "好";
+"Close" = "关闭";
+"Search" = "搜索";
+"xHistory Tips" = "xHistory 小贴士";
+"Don't remind me again" = "不再提醒";
+"You can click on any command or slice\nto fill it into the lower window\n(accessibility permissions required)" = "使用时点击悬浮窗口中的任何命令或切片\n即可将其直接填充到下层窗口中\n(需要授予 xHistory 辅助功能权限)";
+"Do you want to install the command line tool?\nAfter installation, you can run \"xhistory\" in yor terminal to quickly open the floating panel.\n\n(You can also install it later in preferences)" = "是否需要安装 xHistory 命令行工具?\n安装后在命令行中执行 \"xhistory\"\n即可快速打开历史记录叠加面板.\n\n(也可以稍后在偏好设置中进行安装)";
+" History " = " 历史记录 ";
+" Pinned " = " 命令收藏 ";
+"Magic Slice" = "智能切片";
+"Manual Selection" = "手动选取";
+"xHistory Settings" = "xHistory 设置";
+"General" = "一般设置";
+"Launch at Login" = "登录时启动";
+"Read History From" = "读取历史记录";
+"Custom" = "自定义";
+"Custom History File Path" = "自定义历史记录文件路径";
+"Zsh-encoded History" = "Zsh 编码格式";
+"Show Menu bar Icon" = "显示菜单栏图标";
+"Change icon style" = "切换菜单栏图标样式";
+"History Panel Opacity" = "悬浮窗不透明度";
+"History" = "历史记录";
+"Merge adjacent duplicates" = "合并相邻的重复记录";
+"Close the panel after filling" = "填充后自动关闭悬浮窗";
+"Add trailing space when filling" = "填充时在末尾添加空格";
+"Highlight" = "高亮设置";
+"Hotkey" = "快捷键";
+"Open History Panel" = "打开历史记录悬浮窗";
+"Open panel and show pinned history" = "打开悬浮窗并显示命令收藏";
+"Open History Panel as Overlay" = "以叠加层模式打开悬浮窗";
+"Open overlay and show pinned history" = "打开叠加层并显示命令收藏";
+"xHistory will detect the current frontmost window and open a floating panel of the same size on top of it." = "xHistory 会自动检测当前的最前置窗口, 并在它之上打开一个与它尺寸相同的悬浮窗.";
+"Others" = "其他设置";
+"Command Line Tool" = "命令行工具";
+"Install" = "安装";
+"Uninstall" = "卸载";
+"After installation, you can run \"xhistory\" in yor terminal to quickly open the floating panel." = "安装此工具后, 在命令行中执行 \"xhistory\" 即可快速打开叠加面板.";
+"Syntax Highlighting" = "语法高亮显示";
+"Highlight Color Scheme" = "高亮配色方案";
+"Save" = "保存";
+"Hover over a color to see more information and click to modify it." = "将鼠标悬停在任意颜色上以查看更多信息, 点击即可修改配色.";
+"Show Colors..." = "显示颜色…";
+"The color of functions in the code" = "代码中命令/函数的颜色";
+"The color of keywords in the code" = "代码中内置关键字的颜色";
+"The color of strings in the code" = "代码中字符串的颜色";
+"The color of properties in the code" = "代码中变量名称的颜色";
+"The color of operators in the code" = "代码中操作符的颜色";
+"The color of constants in the code" = "代码中选项/参数的颜色";
+"The color of numbers in the code" = "代码中数字值的颜色";
+"The color of embedded code in the code" = "代码中嵌入命令块的颜色";
+"Reset Color Scheme" = "重设配色方案";
+"Update" = "更新设置";
+"Automatically check for updates" = "自动检查程序更新";
+"Automatically download updates" = "自动下载程序更新";
+"Check for Updates…" = "检查程序更新…";
+"Shell" = "命令行";
+"Shell Configuration" = "命令行设置";
+"Custom Configuration (for Bash & Zsh)"= "启用自定义配置 (针对 Bash 和 Zsh)";
+"Real-time History Saving" = "实时保存历史记录";
+"Ignore Consecutive Duplicates" = "忽略连续的重复记录";
+"Maximum Number of Histories" = "最大保存数量 (行数)";
+"Quit" = "退出";
