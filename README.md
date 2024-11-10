@@ -2,7 +2,7 @@
 <p align="center">
 <img src="./xHistory/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width="200" height="200" />
 <h1 align="center">xHistory</h1>
-<h3 align="center">A powerful command line history manager built with SwiftUI<br><a href="./README_zh.md">[中文版本]</a><br><a href="https://lihaoyun6.github.io/xhistory/">[Landing Page]</a></h3> 
+<h3 align="center">A powerful command line history manager built with SwiftUI<br><a href="./README_zh.md">[中文版本]</a></h3> 
 </p>
 
 ## Screenshots
@@ -29,7 +29,7 @@ brew install lihaoyun6/tap/xhistory
 - xHistory is simple to use and can automatically read histories from various shells without requiring manual configuration of terminal options.  
 
 - By default, xHistory appears in the menu bar after launching (it can be hidden), and you can quickly open the panel via a shortcut or command line.  
-- xHistory supports syntax highlighting, automatic filling (without copying), magic slicing, pin commands, command blacklist, and more.  
+- xHistory supports searching history, syntax highlighting, automatic filling (without copying), magic slicing, pin commands, command blacklist, and more.  
 
 ## Q&A
 **1. Why don’t executed commands appear in the history panel?**

@@ -2,7 +2,7 @@
 <p align="center">
 <img src="./xHistory/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width="200" height="200" />
 <h1 align="center">xHistory</h1>
-<h3 align="center">一款功能强大的终端历史记录管理工具<br><a href="./README.md">[English Version]</a><br><a href="https://lihaoyun6.github.io/xhistory/">[软件主页]</a></h3> 
+<h3 align="center">一款功能强大的终端历史记录管理工具<br><a href="./README.md">[English Version]</a></h3> 
 </p>
 
 ## 运行截图
@@ -29,7 +29,7 @@ brew install lihaoyun6/tap/xhistory
 - xHistory 使用简单, 无需手动配置终端选项即可自动读取多种 shell 的历史记录.  
 
 - 启动后默认显示在菜单栏中(可以隐藏), 也可通过快捷键或命令行来快速打开面板. 
-- 支持语法树分析高亮, 免复制自动填充, 智能切片, 命令收藏, 屏蔽特定命令等功能. 
+- 支持搜索命令, 语法高亮, 自动填充, 智能切片, 命令收藏, 屏蔽特定命令等功能. 
 
 ## 常见问题
 **1. 为什么执行命令后没有出现在历史记录面板中?**  
