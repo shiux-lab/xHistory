@@ -2,7 +2,7 @@
 <p align="center">
 <img src="./xHistory/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width="200" height="200" />
 <h1 align="center">xHistory</h1>
-<h3 align="center">A powerful command line history manager built with SwiftUI<br><a href="./README_zh.md">[中文版本]</a></h3> 
+<h3 align="center">A powerful command line history manager built with SwiftUI<br><a href="./README_zh.md">[中文版本]</a><br><a href="https://lihaoyun6.github.io/xhistory/">[Landing Page]</a></h3> 
 </p>
 
 ## Screenshots

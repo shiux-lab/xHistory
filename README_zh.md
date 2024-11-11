@@ -2,7 +2,7 @@
 <p align="center">
 <img src="./xHistory/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width="200" height="200" />
 <h1 align="center">xHistory</h1>
-<h3 align="center">一款功能强大的终端历史记录管理工具<br><a href="./README.md">[English Version]</a></h3> 
+<h3 align="center">一款功能强大的终端历史记录管理工具<br><a href="./README.md">[English Version]</a><br><a href="https://lihaoyun6.github.io/xhistory/">[软件主页]</a></h3> 
 </p>
 
 ## 运行截图
