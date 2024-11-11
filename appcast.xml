@@ -3,6 +3,29 @@
     <channel>
         <title>xHistory</title>
         <item>
+            <title>v0.1.2</title>
+            <pubDate>Mon, 11 Nov 2024 23:13:14 +0800</pubDate>
+            <sparkle:version>12</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>ul{margin-top: 0;margin-bottom: 7;padding-left: 18;}</style><ul>
+                <li>修复了命令收藏功能表现异常的严重 Bug</li>
+                <li>修复了终端窗口全屏时, 叠加层尺寸不正常的问题</li>
+                <li>修复了 Zsh 偏好设置不生效的问题 (历史去重, 实时保存等)</li>
+                </ul><ul>
+                <li>Fixed: "Pin" feature not working properly</li>
+                <li>Fixed: Wrong overlay size when terminal window is fullscreen</li>
+                <li>Fixed: Zsh configuration not working (deduplication and real-time saving)</li>
+                </ul><img src="https://github.com/lihaoyun6/xHistory/raw/main/img/donate.png" width="250"/>
+            ]]></description>
+            <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xHistory_v0.1.2.dmg" length="3738407" type="application/octet-stream" sparkle:edSignature="oaVhWxpKIxXQtOG2ovhlh5qn+rgLEDa9hge/L9LK0XBX1EO2iz8bh4/BmTCb9W6C5UydQ7xeUhiseIofCAUqAg=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xUpdate12-11.delta" sparkle:deltaFrom="11" length="370030" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="k3EE+w3bf6ibMOTbz6usdwQfJg9sh/BRIkNHa/RLPC+oDntODxTQmWFLR22T/tlT8D1yXF1ZHtWocP0xVGBqAA=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xUpdate12-1.delta" sparkle:deltaFrom="1" length="465710" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="6bTbNdc7fhMpL/zo6FwHEbbV03Da974JlcjqRGHqARFj1Ncx4WJZ8ylUynH/DyKTQQtqPvMPehhdFo3WoZhqBQ=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>v0.1.1</title>
             <pubDate>Mon, 11 Nov 2024 20:44:55 +0800</pubDate>
             <sparkle:version>11</sparkle:version>
