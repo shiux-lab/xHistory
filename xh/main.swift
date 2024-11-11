@@ -13,7 +13,7 @@ struct xhistory: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Read the history file for the current session")
     var session: Bool = false
     
-    @Option(name: .shortAndLong, help: ArgumentHelp("Get custom shell configuration", valueName: "bash|zsh[123]"))
+    @Option(name: .shortAndLong, help: ArgumentHelp("Get custom shell configuration", valueName: "bash|zsh[23]"))
     var config: String? = nil
 
     @Option(name: .shortAndLong, help: "Read the specified history file")
@@ -35,7 +35,7 @@ struct xhistory: ParsableCommand {
             let plistPath = appSupportDir.appendingPathComponent("xHistory/shellConfig.plist").path
             if let config = readPlistValue(filePath: plistPath, key: "customShellConfig") as? Bool, config {
                 if let value = readPlistValue(filePath: plistPath, key: "historyLimit") {
-                    if shell == "bash" || shell == "zsh1" { print("export HISTSIZE=\(value)") }
+                    if shell == "bash" || shell == "zsh" { print("export HISTSIZE=\(value)") }
                 }
                 if let value = readPlistValue(filePath: plistPath, key: "realtimeSave") as? Bool, value {
                     if shell == "bash" { print("export PROMPT_COMMAND=\"history -a\"") }

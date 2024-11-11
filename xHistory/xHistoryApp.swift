@@ -53,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             let command = resourceURL.appendingPathComponent("xh").path
             let bashC = "eval $(\(command) -c bash 2>/dev/null)"
             if !bRC.contains(bashC) { try? appendLine(to: bashrc, line: "\n\(bashC)") }
-            let zshC1 = "eval $(\(command) -c zsh1 2>/dev/null)"
+            let zshC1 = "eval $(\(command) -c zsh 2>/dev/null)"
             if !zRC.contains(zshC1) { try? appendLine(to: zshrc, line: "\n\(zshC1)") }
             let zshC2 = "$(\(command) -c zsh2 2>/dev/null)"
             let zshC3 = "$(\(command) -c zsh3 2>/dev/null)"
