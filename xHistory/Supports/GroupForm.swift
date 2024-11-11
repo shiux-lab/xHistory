@@ -82,7 +82,7 @@ struct SSlider: View {
 
 struct SInfoButton: View {
     var tips: LocalizedStringKey
-    @State var isPresented: Bool = false
+    @State private var isPresented: Bool = false
     
     var body: some View {
         Button(action: {
@@ -132,13 +132,17 @@ struct SButton: View {
 
 struct SField: View {
     var title: LocalizedStringKey
+    var placeholder: LocalizedStringKey
     var tips: LocalizedStringKey?
     @Binding var text: String
+    var width: Double
     
-    init(_ title: LocalizedStringKey, tips: LocalizedStringKey? = nil, text: Binding<String>) {
+    init(_ title: LocalizedStringKey, placeholder:LocalizedStringKey = "", tips: LocalizedStringKey? = nil, text: Binding<String>, width: Double = .infinity) {
         self.title = title
+        self.placeholder = placeholder
         self.tips = tips
         self._text = text
+        self.width = width
     }
     
     var body: some View {
@@ -146,10 +150,10 @@ struct SField: View {
             Text(title)
             Spacer()
             if let tips = tips { SInfoButton(tips: tips) }
-            TextField("", text: $text)
+            TextField(placeholder, text: $text)
                 .textFieldStyle(.roundedBorder)
                 .multilineTextAlignment(.trailing)
-                .frame(width: 220)
+                .frame(maxWidth: width)
         }
     }
 }

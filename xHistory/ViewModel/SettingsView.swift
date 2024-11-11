@@ -35,7 +35,7 @@ struct SettingsView: View {
             .listStyle(.sidebar)
             .padding(.top, 9)
         }
-        .frame(width: 600, height: 410)
+        .frame(width: 600, height: 442)
         .navigationTitle("xHistory Settings")
     }
 }
@@ -116,7 +116,9 @@ struct HistoryView: View {
     @AppStorage("autoSpace") var autoSpace = false
     @AppStorage("noSameLine") var noSameLine = true
     @AppStorage("highlighting") var highlighting = true
+    @AppStorage("autoReturn") var autoReturn = false
     
+    @State private var userPath: String = ""
     @State private var disabled: Bool = false
     @State private var styleChanged: Bool = false
     @State private var functionColor: Color = ud.color(forKey: "functionColor") ?? Color(nsColor: .systemOrange)
@@ -156,12 +158,17 @@ struct HistoryView: View {
                 }
                 SDivider()
                 if historyFile != "~/.bash_history" && historyFile != "~/.zsh_history" {
-                    SField("Custom History File Path", text: $historyFile)
+                    HStack {
+                        SField("Custom History File Path", text: $userPath)
+                        Button("Save") { historyFile = userPath }
+                    }
                     SDivider()
                 }
                 SToggle("Merge adjacent duplicates", isOn: $noSameLine)
                 SDivider()
-                SToggle("Close the panel after filling", isOn: $autoClose)
+                SToggle("Close history panel after filling", isOn: $autoClose)
+                SDivider()
+                SToggle("Auto-press Return after filling", isOn: $autoReturn)
                 SDivider()
                 SToggle("Add trailing space when filling", isOn: $autoSpace)
             }
@@ -192,7 +199,7 @@ struct HistoryView: View {
                     })
                     .buttonStyle(.plain)
                     .help("Reset Color Scheme")
-                    Button("Save") { reHeight() }
+                    Button("Save") { HistoryCopyer.shared.reHighlight() }
                 }.disabled(!highlighting)
                 HStack {
                     CS(tips: "The color of keywords in the code", name: "keywordColor", selection: $keywordColor, styleChanged: $styleChanged)
@@ -208,18 +215,12 @@ struct HistoryView: View {
                 .padding(.bottom, 3)
                 .disabled(disabled)
             }
-        }.onChange(of: highlighting) { newValue in
-            disabled = !newValue
-            reHeight()
         }
-    }
-    
-    func reHeight() {
-        SyntaxHighlighter.shared.clearCache()
-        HistoryCopyer.shared.historys.removeAll()
-        HistoryCopyer.shared.updateHistory()
-        for cmd in HistoryCopyer.shared.readHistory() {
-            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd) { _ in }
+        .onAppear { userPath = historyFile }
+        .onChange(of: historyFile) { newValue in userPath = newValue }
+        .onChange(of: highlighting) { newValue in
+            disabled = !newValue
+            HistoryCopyer.shared.reHighlight()
         }
     }
 }
@@ -256,7 +257,9 @@ struct ShellView: View {
     @AppStorage("historyLimit") var historyLimit = 1000
     @AppStorage("noDuplicates") var noDuplicates = true
     @AppStorage("realtimeSave") var realtimeSave = true
+    @AppStorage("preFormatter") var preFormatter = ""
     @State private var disabled: Bool = false
+    @State private var userFormatter = ""
     
     var body: some View {
         SForm(spacing: 10) {
@@ -281,6 +284,13 @@ struct ShellView: View {
                 }.padding(5)
             }
             SGroupBox {
+                HStack(spacing: 4) {
+                    SField("Preformatter", placeholder: "Enter regular expression here", text: $userFormatter)
+                    SInfoButton(tips: "You can use regular expressions to match each line of history.\nxHistory will only show you the content in the matching groups.")
+                    Button("Save") { preFormatter = userFormatter }
+                }
+            }
+            SGroupBox {
                 SButton("Command Line Tool", buttonTitle: cltInstalled ? "Uninstall" : "Install",
                         tips: "After installation, you can run \"xhistory\" in yor terminal to quickly open the floating panel.") {
                     if cltInstalled {
@@ -291,6 +301,8 @@ struct ShellView: View {
                 }.onAppear { cltInstalled = CommandLineTool.isInstalled() }
             }
         }
+        .onAppear { userFormatter = preFormatter }
+        .onChange(of: preFormatter) { _ in HistoryCopyer.shared.reHighlight() }
         .onChange(of: customShellConfig) { newValue in
             disabled = !newValue
             updateShellConfig()

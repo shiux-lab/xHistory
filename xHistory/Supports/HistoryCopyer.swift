@@ -33,12 +33,14 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
     func readHistory(file: String? = nil) -> [String] {
         @AppStorage("historyFile") var historyFile = "~/.bash_history"
         @AppStorage("noSameLine") var noSameLine = true
+        @AppStorage("preFormatter") var preFormatter = ""
         let blockedItems = (ud.object(forKey: "blockedCommands") as? [String]) ?? []
         
         let fileURL = historyFile.absolutePath.url
         var lines = fileURL.readHistory?.components(separatedBy: .newlines).map({ $0.trimmingCharacters(in: .whitespaces) }) ?? []
         lines = lines.filter({ !$0.trimmingCharacters(in: .whitespaces).isEmpty })
         lines.removeAll(where: { blockedItems.contains($0) })
+        if preFormatter != "" { lines = lines.format(usingRegex: preFormatter) }
         if noSameLine { return lines.removingAdjacentDuplicates() }
         return lines
     }
@@ -50,6 +52,15 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
             }
         }
     }
+    
+    func reHighlight() {
+        SyntaxHighlighter.shared.clearCache()
+        HistoryCopyer.shared.historys.removeAll()
+        HistoryCopyer.shared.updateHistory()
+        for cmd in HistoryCopyer.shared.readHistory() {
+            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd) { _ in }
+        }
+    }
 }
 
 extension Array where Element: Equatable {
@@ -58,6 +69,29 @@ extension Array where Element: Equatable {
             if result.last != element {
                 result.append(element)
             }
+        }
+    }
+}
+
+extension Array where Element == String {
+    func format(usingRegex regexPattern: String) -> [String] {
+        do {
+            let regex = try NSRegularExpression(pattern: regexPattern)
+            return self.compactMap { element in
+                // 转换为 NSRange
+                let range = NSRange(element.startIndex..<element.endIndex, in: element)
+                
+                if let match = regex.firstMatch(in: element, options: [], range: range),
+                   match.numberOfRanges > 1,  // 确保捕获组范围存在
+                   let commandRange = Range(match.range(at: 1), in: element) {
+                    return String(element[commandRange])
+                }
+                
+                return nil
+            }
+        } catch {
+            //print("Invalid regular expression: \(error)")
+            return []
         }
     }
 }

@@ -12,6 +12,8 @@ struct ContentView: View {
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("panelOpacity") var panelOpacity = 100
     @AppStorage("showPinned") var showPinned = false
+    @AppStorage("caseSensitivity") var caseSensitivity = false
+    @AppStorage("regexSearch") var regexSearch = false
 
     @StateObject private var data = HistoryCopyer.shared
     
@@ -52,6 +54,7 @@ struct ContentView: View {
                         })
                         .buttonStyle(.plain)
                         .padding(.leading, 1)
+                        .focusable(false)
                         .onHover { hovering in overQuit = hovering }
                     }
                     Picker("", selection: $showPin) {
@@ -61,33 +64,73 @@ struct ContentView: View {
                     .pickerStyle(.segmented)
                     .fixedSize()
                     .padding(.leading, -8)
+                    .focusable(false)
+                    Spacer().frame(width: 4)
+                    Button(action: {
+                        regexSearch.toggle()
+                    }, label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .stroke(regexSearch ? .blue : .secondary.opacity(0.8), lineWidth: 1.5)
+                                .frame(width: 18, height: 18)
+                            HStack(alignment: .bottom, spacing: 1) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 2, weight: .medium))
+                                Image(systemName: "asterisk")
+                                    .font(.system(size: 7, weight: .black))
+                                    .padding(.bottom, 1)
+                            }
+                            .foregroundColor(regexSearch ? .blue : .secondary.opacity(0.8))
+                            .offset(x: 0.5, y: -1)
+                        }
+                        .frame(width: 18, height: 18)
+                        .background(Color.white.opacity(0.0001))
+                        
+                    })
+                    .buttonStyle(.plain)
+                    .focusable(false)
+                    Button(action: {
+                        caseSensitivity.toggle()
+                    }, label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .stroke(caseSensitivity ? .blue : .secondary.opacity(0.8), lineWidth: 1.5)
+                                .frame(width: 18, height: 18)
+                            Image("textformat")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 14)
+                                .offset(y: -0.5)
+                                .foregroundColor(caseSensitivity ? .blue : .secondary.opacity(0.8))
+                        }
+                        .frame(width: 18, height: 18)
+                        .background(Color.white.opacity(0.001))
+                    })
+                    .buttonStyle(.plain)
+                    .focusable(false)
+                    .offset(x: 1)
                     SearchField(search: $keyWord)
                         .frame(height: 21)
                         .onChange(of: keyWord) { newValue in
-                            result = data.historys.filter({ $0.contains(newValue) })
-                            resultP = pinnedList.filter({ $0.contains(newValue) })
+                            result = searchHistory(data.historys)
+                            resultP = searchHistory(pinnedList)
+                        }
+                        .onChange(of: caseSensitivity) { _ in
+                            result = searchHistory(data.historys)
+                            resultP = searchHistory(pinnedList)
+                        }
+                        .onChange(of: regexSearch) { _ in
+                            result = searchHistory(data.historys)
+                            resultP = searchHistory(pinnedList)
                         }
                         .onChange(of: data.historys) { _ in
-                            if keyWord != "" {
-                                result = data.historys.filter({ $0.contains(keyWord) })
-                            }
+                            result = searchHistory(data.historys)
                         }
                         .onChange(of: pinnedList) { _ in
-                            if keyWord != "" {
-                                resultP = pinnedList.filter({ $0.contains(keyWord) })
-                            }
+                            resultP = searchHistory(pinnedList)
                         }
                     if fromMenubar {
                         HStack(spacing: 4) {
-                            Button(action: {
-                                mainPanel.close()
-                                openAboutPanel()
-                            }, label: {
-                                Image(systemName: "info.circle.fill")
-                                    .foregroundStyle(overAbout ? .blue : .secondary.opacity(0.8))
-                            })
-                            .buttonStyle(.plain)
-                            .onHover { hovering in overAbout = hovering }
                             Button(action: {
                                 openSettingPanel()
                             }, label: {
@@ -96,7 +139,7 @@ struct ContentView: View {
                             })
                             .buttonStyle(.plain)
                             .onHover { hovering in overSetting = hovering }
-                        }
+                        }.focusable(false)
                     }
                 }.frame(height: 16)
                 ScrollViewReader { proxy in
@@ -127,6 +170,7 @@ struct ContentView: View {
                             }
                         }.padding(.bottom, 1)
                     }
+                    .focusable(false)
                     .mask(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     .onChange(of: scrollToTop) { _ in proxy.scrollTo(0, anchor: .top) }
                 }
@@ -154,11 +198,11 @@ struct ContentView: View {
                     .buttonStyle(.plain)
                     .onHover { hovering in overSetting = hovering }
                 }
+                .focusable(false)
                 .padding(.horizontal, 7.5)
                 .padding(.vertical, 6)
             }
         }
-        .focusable(false)
         .frame(minWidth: 250, minHeight: 87)
         .onAppear { data.historys = data.readHistory().reversed() }
         .overlay(
@@ -212,6 +256,30 @@ struct ContentView: View {
         }
         return nil
     }
+    
+    func searchHistory(_ data: [String]) -> [String] {
+        if !keyWord.isEmpty && !(keyWord == "") {
+            if regexSearch {
+                do {
+                    let options: NSRegularExpression.Options = caseSensitivity ? [] : [.caseInsensitive]
+                    let regex = try NSRegularExpression(pattern: keyWord, options: options)
+                    
+                    let matchingItems = data.filter { item in
+                        let range = NSRange(location: 0, length: item.utf16.count)
+                        return regex.firstMatch(in: item, options: [], range: range) != nil
+                    }
+                    return matchingItems
+                } catch {
+                    //print("Invalid regular expression: \(error)")
+                    return []
+                }
+            } else {
+                let options: String.CompareOptions = caseSensitivity ? [] : [.caseInsensitive]
+                return data.filter { $0.range(of: keyWord, options: options) != nil }
+            }
+        }
+        return data
+    }
 }
 
 struct CommandView: View {
@@ -225,6 +293,7 @@ struct CommandView: View {
     @AppStorage("panelOpacity") var panelOpacity = 100
     @AppStorage("autoClose") var autoClose = false
     @AppStorage("autoSpace") var autoSpace = false
+    @AppStorage("autoReturn") var autoReturn = false
     
     @State private var boomList = [String]()
     @State private var isHovered: Bool = false
@@ -265,7 +334,7 @@ struct CommandView: View {
                         Spacer()
                     }
                 }.onTapGesture {
-                    copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")")
+                    copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")", enter: autoReturn)
                     if autoClose {
                         mainPanel.close()
                         scrollToTop.toggle()
@@ -424,7 +493,7 @@ func copyToPasetboard(text: String) {
     pasteboard.setString(text, forType: .string)
 }
 
-func copyToPasteboardAndPaste(text: String) {
+func copyToPasteboardAndPaste(text: String, enter: Bool = false) {
     let pasteboard = NSPasteboard.general
     var backupItems: [NSPasteboardItem] = []
 
@@ -447,6 +516,8 @@ func copyToPasteboardAndPaste(text: String) {
     let cmdUp = CGEvent(keyboardEventSource: eventSource, virtualKey: CGKeyCode(kVK_Command), keyDown: false)
     let vDown = CGEvent(keyboardEventSource: eventSource, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: true)
     let vUp = CGEvent(keyboardEventSource: eventSource, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: false)
+    let enterDown = CGEvent(keyboardEventSource: eventSource, virtualKey: CGKeyCode(kVK_Return), keyDown: true)
+    let enterUp = CGEvent(keyboardEventSource: eventSource, virtualKey: CGKeyCode(kVK_Return), keyDown: false)
 
     cmdDown?.flags = .maskCommand
     vDown?.flags = .maskCommand
@@ -455,6 +526,10 @@ func copyToPasteboardAndPaste(text: String) {
     vDown?.post(tap: .cgAnnotatedSessionEventTap)
     vUp?.post(tap: .cgAnnotatedSessionEventTap)
     cmdUp?.post(tap: .cgAnnotatedSessionEventTap)
+    if enter {
+        enterDown?.post(tap: .cgAnnotatedSessionEventTap)
+        enterUp?.post(tap: .cgAnnotatedSessionEventTap)
+    }
     
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
         pasteboard.clearContents()

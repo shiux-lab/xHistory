@@ -29,8 +29,9 @@
 "History Panel Opacity" = "悬浮窗不透明度";
 "History" = "历史记录";
 "Merge adjacent duplicates" = "合并相邻的重复记录";
-"Close the panel after filling" = "填充后自动关闭悬浮窗";
-"Add trailing space when filling" = "填充时在末尾添加空格";
+"Close history panel after filling" = "自动填写后关闭历史面板";
+"Auto-press Return after filling" = "自动填写后帮我按下回车键";
+"Add trailing space when filling" = "自动填写时在末尾添加空格";
 "Highlight" = "高亮设置";
 "Hotkey" = "快捷键";
 "Open History Panel" = "打开历史记录悬浮窗";
@@ -39,6 +40,9 @@
 "Open overlay and show pinned history" = "打开叠加层并显示命令收藏";
 "xHistory will detect the current frontmost window and open a floating panel of the same size on top of it." = "xHistory 会自动检测当前的最前置窗口, 并在它之上打开一个与它尺寸相同的悬浮窗.";
 "Others" = "其他设置";
+"Preformatter" = "预格式化器";
+"Enter regular expression here" = "在此输入正则表达式";
+"You can use regular expressions to match each line of history.\nxHistory will only show you the content in the matching groups." = "你可以使用一段正则表达式对每一条历史记录进行预匹配,\nxHistory 只会向你展示符合条件的匹配组中的内容.";
 "Command Line Tool" = "命令行工具";
 "Install" = "安装";
 "Uninstall" = "卸载";
