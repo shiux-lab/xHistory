@@ -2,7 +2,29 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>xHistory</title>
-        
+        <item>
+            <title>v0.1.2</title>
+            <pubDate>Mon, 11 Nov 2024 23:13:14 +0800</pubDate>
+            <sparkle:version>12</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>ul{margin-top: 0;margin-bottom: 7;padding-left: 18;}</style><ul>
+                <li>修复了命令收藏功能表现异常的严重 Bug</li>
+                <li>修复了终端窗口全屏时, 叠加层尺寸不正常的问题</li>
+                <li>修复了 Zsh 偏好设置不生效的问题 (历史去重, 实时保存等)</li>
+                </ul><ul>
+                <li>Fixed: "Pin" feature not working properly</li>
+                <li>Fixed: Wrong overlay size when terminal window is fullscreen</li>
+                <li>Fixed: Zsh configuration not working (deduplication and real-time saving)</li>
+                </ul><img src="https://github.com/lihaoyun6/xHistory/raw/main/img/donate.png" width="250"/>
+            ]]></description>
+            <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xHistory_v0.1.2.dmg" length="3738411" type="application/octet-stream" sparkle:edSignature="4kQsA9R3aqpURxyQSQj86O5fjZoFgpt5K83jNyof1wL0KMv6R3gxKaQrxxrBkvyc8Q2r+ervNzff8rqYmIFCAQ=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xUpdate12-11.delta" sparkle:deltaFrom="11" length="373414" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="6iwpLsfSCxq+UKzsvGcy4jmcjGBLyYtT/avxA9GwigCZ+/phO75/j1TjoeapOa3ZYOfrcEasHWosBlALygRXCg=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.2/xUpdate12-1.delta" sparkle:deltaFrom="1" length="469438" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="fcuRE74/lMo5zvR/3+mUjPYSCzMQObrPiA62ruAobSQWi+gpuhlOr5usMnV3WCGmdSZNOEdIzKWC4ZPiYdwYDw=="/>
+            </sparkle:deltas>
+        </item>
         <item>
             <title>v0.1.1</title>
             <pubDate>Mon, 11 Nov 2024 20:44:55 +0800</pubDate>
