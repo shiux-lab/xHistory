@@ -142,37 +142,46 @@ struct ContentView: View {
                         }.focusable(false)
                     }
                 }.frame(height: 16)
-                ScrollViewReader { proxy in
-                    ScrollView(showsIndicators:false) {
-                        LazyVStack(alignment: .leading, spacing: 6) {
-                            if showPin {
+                if showPin {
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators:false) {
+                            LazyVStack(alignment: .leading, spacing: 6) {
                                 ForEach(keyWord == "" ? pinnedList.indices : resultP.indices, id: \.self) { index in
                                     CommandView(index: index,
                                                 command: keyWord == "" ? pinnedList[index] : resultP[index],
                                                 pinnedList: $pinnedList,
-                                                scrollToTop: $scrollToTop,
+                                                //scrollToTop: $scrollToTop,
                                                 fromMenubar: fromMenubar)
-                                        .id(index)
-                                        .padding(.horizontal, 1)
-                                        .shadow(color: (panelOpacity != 100 && !fromMenubar) ? .clear :.secondary.opacity(0.8), radius: 0.3, y: 0.5)
+                                    .id(index)
+                                    .padding(.horizontal, 1)
+                                    .shadow(color: (panelOpacity != 100 && !fromMenubar) ? .clear :.secondary.opacity(0.8), radius: 0.3, y: 0.5)
                                 }
-                            } else {
+                            }.padding(.bottom, 1)
+                        }
+                        .focusable(false)
+                        .mask(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .onChange(of: scrollToTop) { _ in proxy.scrollTo(0, anchor: .top) }
+                    }
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators:false) {
+                            LazyVStack(alignment: .leading, spacing: 6) {
                                 ForEach(keyWord == "" ? data.historys.indices : result.indices, id: \.self) { index in
                                     CommandView(index: index,
                                                 command: keyWord == "" ? data.historys[index] : result[index],
                                                 pinnedList: $pinnedList,
-                                                scrollToTop: $scrollToTop,
+                                                //scrollToTop: $scrollToTop,
                                                 fromMenubar: fromMenubar)
-                                        .id(index)
-                                        .padding(.horizontal, 1)
-                                        .shadow(color: (panelOpacity != 100 && !fromMenubar) ? .clear :.secondary.opacity(0.8), radius: 0.3, y: 0.5)
+                                    .id(index)
+                                    .padding(.horizontal, 1)
+                                    .shadow(color: (panelOpacity != 100 && !fromMenubar) ? .clear :.secondary.opacity(0.8), radius: 0.3, y: 0.5)
                                 }
-                            }
-                        }.padding(.bottom, 1)
+                            }.padding(.bottom, 1)
+                        }
+                        .focusable(false)
+                        .mask(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .onChange(of: scrollToTop) { _ in proxy.scrollTo(0, anchor: .top) }
                     }
-                    .focusable(false)
-                    .mask(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                    .onChange(of: scrollToTop) { _ in proxy.scrollTo(0, anchor: .top) }
                 }
             }
             .padding(7)
@@ -287,13 +296,14 @@ struct CommandView: View {
     var command: String
     
     @Binding var pinnedList: [String]
-    @Binding var scrollToTop: Bool
+    //@Binding var scrollToTop: Bool
     var fromMenubar: Bool = false
     
     @AppStorage("panelOpacity") var panelOpacity = 100
     @AppStorage("autoClose") var autoClose = false
     @AppStorage("autoSpace") var autoSpace = false
     @AppStorage("autoReturn") var autoReturn = false
+    @AppStorage("swapButtons") var swapButtons = false
     
     @State private var boomList = [String]()
     @State private var isHovered: Bool = false
@@ -322,6 +332,63 @@ struct CommandView: View {
                     }
                 }
             HStack(spacing: 0) {
+                if swapButtons {
+                    HStack(spacing: 5) {
+                        Button(action: {
+                            copyToPasetboard(text: command)
+                            copied = true
+                            withAnimation(.easeInOut(duration: 1)) { copied = false }
+                        }, label: {
+                            Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(copyText ? .blue : .secondary)
+                                .frame(width: 12)
+                                .frame(maxHeight: .infinity)
+                        })
+                        .buttonStyle(.plain)
+                        .onHover { hovering in copyText = hovering }
+                        Button(action: {
+                            if pinnedList.contains(command) {
+                                pinnedList.removeAll(where: { $0 == command })
+                            } else {
+                                pinnedList.append(command)
+                            }
+                            ud.set(pinnedList, forKey: "pinnedList")
+                        }, label: {
+                            Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
+                                .font(.system(size: 13, weight: .medium))
+                                .rotationEffect(.degrees(45))
+                                .foregroundColor(pinHistory ? .blue : .secondary)
+                                .frame(width: 14)
+                                .frame(maxHeight: .infinity)
+                        })
+                        .buttonStyle(.plain)
+                        .onHover { hovering in pinHistory = hovering }
+                        ZStack {
+                            if shwoMore {
+                                Button(action: {
+                                    if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
+                                        let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
+                                        boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
+                                        boomMode = true
+                                    }
+                                }, label: {
+                                    Image(systemName: "character.cursor.ibeam")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.blue)
+                                        .frame(width: 13)
+                                        .frame(maxHeight: .infinity)
+                                }).buttonStyle(.plain)
+                            } else {
+                                Image(systemName: "rectangle.expand.vertical")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 13)
+                                    .frame(maxHeight: .infinity)
+                            }
+                        }.onHover { hovering in shwoMore = hovering }
+                    }.padding(.leading, 8)
+                }
                 ZStack {
                     Color.primary.opacity(0.0001)
                     HStack {
@@ -337,64 +404,66 @@ struct CommandView: View {
                     copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")", enter: autoReturn)
                     if autoClose {
                         mainPanel.close()
-                        scrollToTop.toggle()
+                        menuPopover.performClose(self)
                     }
                 }
-                HStack(spacing: 5) {
-                    Button(action: {
-                        copyToPasetboard(text: command)
-                        copied = true
-                        withAnimation(.easeInOut(duration: 1)) { copied = false }
-                    }, label: {
-                        Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(copyText ? .blue : .secondary)
-                            .frame(width: 12)
-                            .frame(maxHeight: .infinity)
-                    })
-                    .buttonStyle(.plain)
-                    .onHover { hovering in copyText = hovering }
-                    Button(action: {
-                        if pinnedList.contains(command) {
-                            pinnedList.removeAll(where: { $0 == command })
-                        } else {
-                            pinnedList.append(command)
-                        }
-                        ud.set(pinnedList, forKey: "pinnedList")
-                    }, label: {
-                        Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
-                            .font(.system(size: 13, weight: .medium))
-                            .rotationEffect(.degrees(45))
-                            .foregroundColor(pinHistory ? .blue : .secondary)
-                            .frame(width: 14)
-                            .frame(maxHeight: .infinity)
-                    })
-                    .buttonStyle(.plain)
-                    .onHover { hovering in pinHistory = hovering }
-                    ZStack {
-                        if shwoMore {
-                            Button(action: {
-                                if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
-                                    let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
-                                    boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
-                                    boomMode = true
-                                }
-                            }, label: {
-                                Image(systemName: "character.cursor.ibeam")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(.blue)
+                if !swapButtons {
+                    HStack(spacing: 5) {
+                        Button(action: {
+                            copyToPasetboard(text: command)
+                            copied = true
+                            withAnimation(.easeInOut(duration: 1)) { copied = false }
+                        }, label: {
+                            Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(copyText ? .blue : .secondary)
+                                .frame(width: 12)
+                                .frame(maxHeight: .infinity)
+                        })
+                        .buttonStyle(.plain)
+                        .onHover { hovering in copyText = hovering }
+                        Button(action: {
+                            if pinnedList.contains(command) {
+                                pinnedList.removeAll(where: { $0 == command })
+                            } else {
+                                pinnedList.append(command)
+                            }
+                            ud.set(pinnedList, forKey: "pinnedList")
+                        }, label: {
+                            Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
+                                .font(.system(size: 13, weight: .medium))
+                                .rotationEffect(.degrees(45))
+                                .foregroundColor(pinHistory ? .blue : .secondary)
+                                .frame(width: 14)
+                                .frame(maxHeight: .infinity)
+                        })
+                        .buttonStyle(.plain)
+                        .onHover { hovering in pinHistory = hovering }
+                        ZStack {
+                            if shwoMore {
+                                Button(action: {
+                                    if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
+                                        let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
+                                        boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
+                                        boomMode = true
+                                    }
+                                }, label: {
+                                    Image(systemName: "character.cursor.ibeam")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.blue)
+                                        .frame(width: 13)
+                                        .frame(maxHeight: .infinity)
+                                }).buttonStyle(.plain)
+                            } else {
+                                Image(systemName: "rectangle.expand.vertical")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.secondary)
                                     .frame(width: 13)
                                     .frame(maxHeight: .infinity)
-                            }).buttonStyle(.plain)
-                        } else {
-                            Image(systemName: "rectangle.expand.vertical")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.secondary)
-                                .frame(width: 13)
-                                .frame(maxHeight: .infinity)
-                        }
-                    }.onHover { hovering in shwoMore = hovering }
-                }.padding(.trailing, 8)
+                            }
+                        }.onHover { hovering in shwoMore = hovering }
+                    }.padding(.trailing, 8)
+                }
             }
             .background(Color.background.opacity((isHovered || fromMenubar) ? 1.0 : Double(panelOpacity) / 100))
             .frame(maxWidth: .infinity)

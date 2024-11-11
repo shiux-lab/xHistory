@@ -11,8 +11,7 @@ import CoreGraphics
 func getActiveWindowGeometry() -> (x: Int, y: Int, width: Int, height: Int)? {
     guard let appName = NSWorkspace.shared.frontmostApplication?.localizedName else { return nil }
     let windowListInfo = CGWindowListCopyWindowInfo([.excludeDesktopElements,.optionOnScreenOnly], kCGNullWindowID) as NSArray? as? [[String: Any]]
-
-    if let firstWindow = windowListInfo?.first(where: { $0["kCGWindowOwnerName"] as? String == appName }) {
+    if let firstWindow = windowListInfo?.first(where: { $0["kCGWindowOwnerName"] as? String == appName && $0["kCGWindowAlpha"] as? NSNumber != 0 }) {
         if let boundsDict = firstWindow["kCGWindowBounds"] as? [String: CGFloat],
            let x = boundsDict["X"], let y = boundsDict["Y"],
            let width = boundsDict["Width"], let height = boundsDict["Height"] {

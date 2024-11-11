@@ -12,6 +12,7 @@
 "xHistory Tips" = "xHistory 小贴士";
 "Don't remind me again" = "不再提醒";
 "You can click on any command or slice\nto fill it into the lower window\n(accessibility permissions required)" = "使用时点击悬浮窗口中的任何命令或切片\n即可将其直接填充到下层窗口中\n(需要授予 xHistory 辅助功能权限)";
+"If your history has extras (like timestamps)\nyou can preformat it with a custom Regex in\n\"Preferences\" > \"Shell\" > \"Preformatter\"" = "如果你的历史记录中含有额外的信息 (比如时间戳)\n你可以在设置面板中的 \"命令行\" > \"预格式化器\"\n中填写一条自定义正则表达式以对其进行预匹配";
 "Do you want to install the command line tool?\nAfter installation, you can run \"xhistory\" in yor terminal to quickly open the floating panel.\n\n(You can also install it later in preferences)" = "是否需要安装 xHistory 命令行工具?\n安装后在命令行中执行 \"xhistory\"\n即可快速打开历史记录叠加面板.\n\n(也可以稍后在偏好设置中进行安装)";
 " History " = " 历史记录 ";
 " Pinned " = " 命令收藏 ";
@@ -39,6 +40,8 @@
 "Open History Panel as Overlay" = "以叠加层模式打开悬浮窗";
 "Open overlay and show pinned history" = "打开叠加层并显示命令收藏";
 "xHistory will detect the current frontmost window and open a floating panel of the same size on top of it." = "xHistory 会自动检测当前的最前置窗口, 并在它之上打开一个与它尺寸相同的悬浮窗.";
+"Swap action button positions" = "交换操作按钮的位置";
+"Put \"Copy\", \"Pin\" and \"Expand\" buttons on the other side of history items.\nThis is useful for full screen or very long window." = "将\"复制\",\"固定\"和\"展开\"按钮显示在历史记录的另一侧.\n当全屏使用或窗口很长的时候, 这会有助于减少鼠标移动距离.";
 "Others" = "其他设置";
 "Preformatter" = "预格式化器";
 "Enter regular expression here" = "在此输入正则表达式";

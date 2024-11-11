@@ -13,7 +13,7 @@ struct xhistory: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Read the history file for the current session")
     var session: Bool = false
     
-    @Option(name: .shortAndLong, help: ArgumentHelp("Get custom shell configuration", valueName: "bash|zsh"))
+    @Option(name: .shortAndLong, help: ArgumentHelp("Get custom shell configuration", valueName: "bash|zsh[123]"))
     var config: String? = nil
 
     @Option(name: .shortAndLong, help: "Read the specified history file")
@@ -34,14 +34,16 @@ struct xhistory: ParsableCommand {
             guard let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
             let plistPath = appSupportDir.appendingPathComponent("xHistory/shellConfig.plist").path
             if let config = readPlistValue(filePath: plistPath, key: "customShellConfig") as? Bool, config {
-                if let value = readPlistValue(filePath: plistPath, key: "historyLimit") { print("export HISTSIZE=\(value)") }
+                if let value = readPlistValue(filePath: plistPath, key: "historyLimit") {
+                    if shell == "bash" || shell == "zsh1" { print("export HISTSIZE=\(value)") }
+                }
                 if let value = readPlistValue(filePath: plistPath, key: "realtimeSave") as? Bool, value {
                     if shell == "bash" { print("export PROMPT_COMMAND=\"history -a\"") }
-                    if shell == "zsh" { print("setopt INC_APPEND_HISTORY") }
+                    if shell == "zsh2" { print("setopt INC_APPEND_HISTORY") }
                 }
                 if let value = readPlistValue(filePath: plistPath, key: "noDuplicates") as? Bool, value {
                     if shell == "bash" { print("export HISTCONTROL=ignoredups") }
-                    if shell == "zsh" { print("setopt HIST_IGNORE_DUPS") }
+                    if shell == "zsh3" { print("setopt HIST_IGNORE_DUPS") }
                 }
             }
             return

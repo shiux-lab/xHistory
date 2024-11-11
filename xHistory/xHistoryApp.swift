@@ -38,6 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("statusBar") var statusBar = true
     @AppStorage("showPinned") var showPinned = false
+    @AppStorage("swapButtons") var swapButtons = false
     
     func applicationWillFinishLaunching(_ notification: Notification) {
         updateShellConfig()
@@ -47,13 +48,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
         try? createEmptyFile(at: bashrc)
         try? createEmptyFile(at: zshrc)
         if let resourceURL = Bundle.main.resourceURL {
+            let bRC = bashrc.readHistory ?? ""
+            let zRC = zshrc.readHistory ?? ""
             let command = resourceURL.appendingPathComponent("xh").path
-            if !(bashrc.readHistory ?? "").contains(command) {
-                try? appendLine(to: bashrc, line: "\neval $(\(command) -c bash 2>/dev/null)")
-            }
-            if !(zshrc.readHistory ?? "").contains(command) {
-                try? appendLine(to: zshrc, line: "\neval $(\(command) -c zsh 2>/dev/null)")
-            }
+            let bashC = "eval $(\(command) -c bash 2>/dev/null)"
+            if !bRC.contains(bashC) { try? appendLine(to: bashrc, line: "\n\(bashC)") }
+            let zshC1 = "eval $(\(command) -c zsh1 2>/dev/null)"
+            if !zRC.contains(zshC1) { try? appendLine(to: zshrc, line: "\n\(zshC1)") }
+            let zshC2 = "$(\(command) -c zsh2 2>/dev/null)"
+            let zshC3 = "$(\(command) -c zsh3 2>/dev/null)"
+            if !zRC.contains(zshC2) { try? appendLine(to: zshrc, line: "\n\(zshC2)") }
+            if !zRC.contains(zshC3) { try? appendLine(to: zshrc, line: "\n\(zshC3)") }
         }
         
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURLEvent(_:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
@@ -62,6 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             if let error = error { print("⚠️ Notification authorization denied: \(error.localizedDescription)") }
         }
         UNUserNotificationCenter.current().delegate = self*/
+        KeyboardShortcuts.onKeyDown(for: .swapButtons) { self.swapButtons.toggle() }
         KeyboardShortcuts.onKeyDown(for: .showPanel) { self.openMainPanel() }
         KeyboardShortcuts.onKeyDown(for: .showOverlay) { openCustomURLWithActiveWindowGeometry() }
         KeyboardShortcuts.onKeyDown(for: .showPinnedPanel) {
@@ -82,7 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             menuPopover.behavior = .transient
         }
         statusBarItem.isVisible = statusBar
-        
+        //swapButtons = false
         if !fd.fileExists(atPath: historyFile.absolutePath) {
             if historyFile == "~/.bash_history" {
                 historyFile = "~/.zsh_history"
@@ -136,7 +142,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
         
         tips("You can click on any command or slice\nto fill it into the lower window\n(accessibility permissions required)".local,
              id: "xh.how-to-use.note")
-        
+        tips("If your history has extras (like timestamps)\nyou can preformat it with a custom Regex in\n\"Preferences\" > \"Shell\" > \"Preformatter\"".local,
+             id: "xh.pre-formatter.note", width:260)
         if !CommandLineTool.isInstalled() {
             tips("Do you want to install the command line tool?\nAfter installation, you can run \"xhistory\" in yor terminal to quickly open the floating panel.\n\n(You can also install it later in preferences)".local,
                  title: "Command Line Tool".local,

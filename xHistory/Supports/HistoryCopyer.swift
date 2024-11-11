@@ -39,8 +39,8 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         let fileURL = historyFile.absolutePath.url
         var lines = fileURL.readHistory?.components(separatedBy: .newlines).map({ $0.trimmingCharacters(in: .whitespaces) }) ?? []
         lines = lines.filter({ !$0.trimmingCharacters(in: .whitespaces).isEmpty })
-        lines.removeAll(where: { blockedItems.contains($0) })
         if preFormatter != "" { lines = lines.format(usingRegex: preFormatter) }
+        lines.removeAll(where: { blockedItems.contains($0) })
         if noSameLine { return lines.removingAdjacentDuplicates() }
         return lines
     }

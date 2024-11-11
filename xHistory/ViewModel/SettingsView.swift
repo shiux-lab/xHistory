@@ -227,7 +227,7 @@ struct HistoryView: View {
 
 struct HotkeyView: View {
     var body: some View {
-        SForm {
+        SForm(spacing: 10) {
             SGroupBox(label: "Hotkey") {
                 SItem(label: "Open History Panel") { KeyboardShortcuts.Recorder("", name: .showPanel) }
                 SDivider()
@@ -244,6 +244,14 @@ struct HotkeyView: View {
                     HStack(spacing: -5) {
                         SInfoButton(tips: "xHistory will detect the current frontmost window and open a floating panel of the same size on top of it.")
                         KeyboardShortcuts.Recorder("", name: .showPinnedOverlay)
+                    }
+                }
+            }
+            SGroupBox {
+                SItem(label: "Swap action button positions") {
+                    HStack(spacing: -5) {
+                        SInfoButton(tips: "Put \"Copy\", \"Pin\" and \"Expand\" buttons on the other side of history items.\nThis is useful for full screen or very long window.")
+                        KeyboardShortcuts.Recorder("", name: .swapButtons)
                     }
                 }
             }
@@ -415,6 +423,7 @@ extension KeyboardShortcuts.Name {
     static let showPinnedPanel = Self("showPinnedPanel")
     static let showOverlay = Self("showOverlay")
     static let showPinnedOverlay = Self("showPinnedOverlay")
+    static let swapButtons = Self("switchButtons")
 }
 
 struct FlowLayout<Content: View>: View {
