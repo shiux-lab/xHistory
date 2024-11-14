@@ -29,7 +29,7 @@ brew install lihaoyun6/tap/xhistory
 - xHistory is simple to use and can automatically read histories from various shells without requiring manual configuration of terminal options.  
 
 - By default, xHistory appears in the menu bar after launching (it can be hidden), and you can quickly open the panel via a shortcut or command line.  
-- xHistory supports searching history, syntax highlighting, automatic filling (without copying), magic slicing, pin commands, command blacklist, and more.  
+- xHistory supports regex searching, syntax highlighting, automatic filling, magic slicing, pin commands, cloud archiving, and more.  
 
 ## Q&A
 **1. Why don’t executed commands appear in the history panel?**
