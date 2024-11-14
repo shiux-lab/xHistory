@@ -8,10 +8,16 @@ import ArgumentParser
 import Foundation
 
 struct xhistory: ParsableCommand {
-    static var configuration = CommandConfiguration(version: "0.1.0")
+    static var configuration = CommandConfiguration(version: "0.1.3")
     
     @Flag(name: .shortAndLong, help: "Read the history file for the current session")
     var session: Bool = false
+    
+    @Flag(name: .shortAndLong, help: "Open xHistory overlay and show pinned history")
+    var pinned: Bool = false
+    
+    @Flag(name: .shortAndLong, help: "Open xHistory overlay and show pinned history")
+    var archive: Bool = false
     
     @Option(name: .shortAndLong, help: ArgumentHelp("Get custom shell configuration", valueName: "bash|zsh[23]"))
     var config: String? = nil
@@ -20,14 +26,30 @@ struct xhistory: ParsableCommand {
     var file: String? = nil
     
     mutating func validate() throws {
-        if session == true && file != nil {
-            throw ValidationError("Options -c and -f cannot be used together!")
+        let arguments = [session, pinned, archive, config != nil, file != nil]
+        let activeCount = arguments.filter { $0 }.count
+        if activeCount > 1 {
+            throw ValidationError("These options cannot be used together!")
         }
     }
 
     mutating func run() throws {
+        if let file = file {
+            openCustomURLWithActiveWindowGeometry(prompt: "&file=\(file)")
+            return
+        }
         if session {
-            openCustomURLWithActiveWindowGeometry(file: ProcessInfo.processInfo.environment["HISTFILE"])
+            if let file = ProcessInfo.processInfo.environment["HISTFILE"] {
+                openCustomURLWithActiveWindowGeometry(prompt: "&file=\(file)")
+            }
+            return
+        }
+        if pinned {
+            openCustomURLWithActiveWindowGeometry(prompt: "&mode=pinned")
+            return
+        }
+        if archive {
+            openCustomURLWithActiveWindowGeometry(prompt: "&mode=archive")
             return
         }
         if let shell = config {
@@ -48,7 +70,7 @@ struct xhistory: ParsableCommand {
             }
             return
         }
-        openCustomURLWithActiveWindowGeometry(file: file)
+        openCustomURLWithActiveWindowGeometry()
     }
 }
 

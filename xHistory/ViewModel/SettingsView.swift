@@ -28,6 +28,9 @@ struct SettingsView: View {
                 NavigationLink(destination: ShellView(), tag: "Shell", selection: $selectedItem) {
                     Label("Shell", image: "shell")
                 }
+                NavigationLink(destination: CloudView(), tag: "Cloud", selection: $selectedItem) {
+                    Label("Cloud", image: "cloud")
+                }
                 NavigationLink(destination: BlacklistView(), tag: "Blacklist", selection: $selectedItem) {
                     Label("Blacklist", image: "block")
                 }
@@ -43,8 +46,10 @@ struct SettingsView: View {
 struct GeneralView: View {
     @AppStorage("panelOpacity") var panelOpacity = 100
     @AppStorage("statusBar") var statusBar = true
+    //@AppStorage("dockIcon") var dockIcon = false
     @AppStorage("statusIconName") var statusIconName = "menuBar"
     
+    @State private var showStatusBar = true
     @State private var launchAtLogin = false
     
     var body: some View {
@@ -66,32 +71,45 @@ struct GeneralView: View {
                         }
                     SDivider()
                 }
-                HStack(spacing: 4) {
-                    Text("Show Menu bar Icon")
-                    Spacer()
-                    Button(action: {
-                        if let button = statusBarItem.button {
-                            if statusIconName == "menuBar" {
-                                statusIconName = "menuBarInvert"
-                            } else {
-                                statusIconName = "menuBar"
-                            }
-                            button.image = NSImage(named: statusIconName)
-                        }
-                    }, label: {
-                        Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    })
-                    .buttonStyle(.plain)
-                    .help("Change icon style")
-                    Toggle("", isOn: $statusBar)
-                        .toggleStyle(.switch)
-                        .scaleEffect(0.7)
-                        .frame(width: 32)
-                        
-                }.frame(height: 16)
+                SToggle("Show Menu bar Icon", isOn: $statusBar)
                 SDivider()
+                if showStatusBar {
+                    SItem(label: "Menu Bar Icon") {
+                        HStack {
+                            Button(action: {
+                                if let button = statusBarItem.button {
+                                    statusIconName = "menuBarInvert"
+                                    button.image = NSImage(named: statusIconName)
+                                }
+                            }, label: {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                        .foregroundStyle(statusIconName == "menuBarInvert" ? .blue : .clear)
+                                    Image("menuBarInvert")
+                                        .offset(x: 0.5, y: 0.5)
+                                        .foregroundStyle(statusIconName == "menuBarInvert" ? .white : .secondary)
+                                }.frame(width: 24, height: 24)
+                            }).buttonStyle(.plain)
+                            Button(action: {
+                                if let button = statusBarItem.button {
+                                    statusIconName = "menuBar"
+                                    button.image = NSImage(named: statusIconName)
+                                }
+                            }, label: {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                        .foregroundStyle(statusIconName == "menuBar" ? .blue : .clear)
+                                    Image("menuBar")
+                                        .offset(x: 0.5, y: 0.5)
+                                        .foregroundStyle(statusIconName == "menuBar" ? .white : .secondary)
+                                }.frame(width: 24, height: 24)
+                            }).buttonStyle(.plain)
+                        }
+                    }
+                    SDivider()
+                }
+                //SToggle("Show Dock Icon", isOn: $dockIcon)
+                //SDivider()
                 HStack {
                     SSlider(label: "History Panel Opacity", value: $panelOpacity, range: 10...100, width: 160)
                     Text("\(panelOpacity)%").frame(width: 35)
@@ -103,10 +121,22 @@ struct GeneralView: View {
                 if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
                     Text("xHistory v\(appVersion)")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
-        }.onChange(of: statusBar) { newValue in statusBarItem.isVisible = newValue }
+        }
+        .onAppear { showStatusBar = statusBar }
+        .onChange(of: statusBar) { newValue in
+            showStatusBar = newValue
+            statusBarItem.isVisible = newValue
+        }
+        /*.onChange(of: dockIcon) { newValue in
+            if newValue {
+                NSApp.setActivationPolicy(.regular)
+            } else {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }*/
     }
 }
 
@@ -180,7 +210,7 @@ struct HistoryView: View {
                         Text("Highlight Color Scheme")
                         Text("Hover over a color to see more information and click to modify it.")
                             .font(.footnote)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     Spacer()
                     Button(action: {
@@ -195,7 +225,7 @@ struct HistoryView: View {
                     }, label: {
                         Image(systemName: "arrow.counterclockwise.circle.fill")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     })
                     .buttonStyle(.plain)
                     .help("Reset Color Scheme")
@@ -276,7 +306,7 @@ struct ShellView: View {
                 Text("Shell Configuration").font(.headline)
                 Text("These settings will only take effect in newly logged-in shells when you modify them.")
                     .font(.footnote)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             ) {
                 VStack(spacing: 10) {
@@ -327,6 +357,99 @@ struct ShellView: View {
     }
 }
 
+struct CloudView: View {
+    @AppStorage("cloudSync") var cloudSync = false
+    @AppStorage("cloudDirectory") var cloudDirectory = ""
+    @StateObject private var state = PageState.shared
+    
+    var body: some View {
+        SForm(spacing: 10, noSpacer: true) {
+            SGroupBox(label: "Cloud") {
+                SToggle("Cloud Archiving", isOn: $cloudSync)
+                SDivider()
+                SItem(label: "Archive Folder", spacing: 4) {
+                    Text(cloudDirectory)
+                        .font(.footnote)
+                        .foregroundColor(Color.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                    SInfoButton(tips: "Select a folder in iCloud Drive to store and sync history across multiple devices.")
+                    Button("Select...", action: { updateCloudDirectory() })
+                }
+            }
+            GroupBox(label:
+                        HStack(spacing: 5) {
+                Text("Archives").font(.headline)
+                Button(action: {
+                    state.archiveList = getCloudFiles()
+                }, label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
+                }).buttonStyle(.plain)
+            }) {
+                VStack(spacing: 10) {
+                    ScrollView(showsIndicators: true) {
+                        ForEach(state.archiveList.indices, id: \.self) { index in
+                            HStack {
+                                Text(state.archiveList[index])
+                                Spacer()
+                                ConfirmButton(label: "Delete", title: "Delete This Archive?", confirmButton: "Delete") {
+                                    if state.archiveList[index] == state.archiveName {
+                                        state.archiveName = ""
+                                        state.archiveData.removeAll()
+                                    }
+                                    let archiveURL = cloudDirectory.url.appendingPathComponent("\(state.archiveList[index]).xha")
+                                    try? fd.removeItem(at: archiveURL)
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { state.archiveList = getCloudFiles() }
+                                }
+                            }
+                            .frame(height: 12)
+                            .padding(.vertical, 4)
+                            SDivider()
+                        }
+                    }.frame(maxWidth: .infinity)
+                }.padding(5)
+            }
+        }
+        .onAppear { state.archiveList = getCloudFiles() }
+        .onChange(of: cloudSync) { _ in state.archiveList = getCloudFiles() }
+    }
+    
+    func updateCloudDirectory() {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = false
+        openPanel.canChooseDirectories = true
+        openPanel.canCreateDirectories = true
+        openPanel.allowedContentTypes = []
+        openPanel.allowsOtherFileTypes = false
+        if openPanel.runModal() == NSApplication.ModalResponse.OK {
+            if let path = openPanel.urls.first?.path { cloudDirectory = path }
+        }
+    }
+}
+
+struct ConfirmButton: View {
+    var label: LocalizedStringKey
+    var title: LocalizedStringKey = "Are you sure?"
+    var confirmButton: LocalizedStringKey = "Confirm"
+    var message: LocalizedStringKey = "You will not be able to recover it!"
+    var action: () -> Void
+    @State private var showAlert = false
+    
+    var body: some View {
+        Button(action: {
+            showAlert = true
+        }, label: {
+            Text(label).foregroundStyle(.red)
+        }).alert(title, isPresented: $showAlert) {
+            Button(confirmButton, role: .destructive) { action() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(message)
+        }
+    }
+}
+
 struct BlacklistView: View {
     @State private var blockedItems = [String]()
     @State private var temp = ""
@@ -340,17 +463,17 @@ struct BlacklistView: View {
                 Text("Blacklist").font(.headline)
                 Text("The following commands will be ignored from the history.")
                     .font(.footnote)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
             ) {
                 VStack(spacing: 10) {
                     ZStack(alignment: Alignment(horizontal: .trailing, vertical: .bottom)) {
                         List {
-                            ForEach(0..<blockedItems.count, id: \.self) { index in
+                            ForEach(blockedItems.indices, id: \.self) { index in
                                 HStack {
                                     Image(systemName: "minus.circle.fill")
                                         .font(.system(size: 12))
-                                        .foregroundColor(.red)
+                                        .foregroundStyle(.red)
                                         .onTapGesture { if editingIndex == nil { blockedItems.remove(at: index) } }
                                     Text(blockedItems[index])
                                 }
@@ -361,7 +484,7 @@ struct BlacklistView: View {
                         }) {
                             Image(systemName: "plus.square.fill")
                                 .font(.system(size: 20))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
                         .sheet(isPresented: $showSheet){
@@ -399,6 +522,16 @@ struct BlacklistView: View {
     }
 }
 
+func getCloudFiles() -> [String] {
+    @AppStorage("cloudDirectory") var cloudDirectory = ""
+    var result = [String]()
+    
+    let contents = try? fd.contentsOfDirectory(atPath: cloudDirectory)
+    result = contents?.filter { $0.hasSuffix(".\(cloudFileExtension)") }.map { $0.deletingPathExtension }  ?? []
+    
+    return result
+}
+
 struct CS: View {
     var tips: LocalizedStringKey
     var name: String
@@ -416,14 +549,6 @@ struct CS: View {
         .help(tips)
         .onChange(of: selection) { userColor in ud.setColor(userColor, forKey: name); styleChanged = true }
     }
-}
-
-extension KeyboardShortcuts.Name {
-    static let showPanel = Self("showPanel")
-    static let showPinnedPanel = Self("showPinnedPanel")
-    static let showOverlay = Self("showOverlay")
-    static let showPinnedOverlay = Self("showPinnedOverlay")
-    static let swapButtons = Self("switchButtons")
 }
 
 struct FlowLayout<Content: View>: View {
@@ -484,6 +609,14 @@ struct FlowLayout<Content: View>: View {
             return Color.clear
         }
     }
+}
+
+extension KeyboardShortcuts.Name {
+    static let showPanel = Self("showPanel")
+    static let showPinnedPanel = Self("showPinnedPanel")
+    static let showOverlay = Self("showOverlay")
+    static let showPinnedOverlay = Self("showPinnedOverlay")
+    static let swapButtons = Self("switchButtons")
 }
 
 extension UserDefaults {

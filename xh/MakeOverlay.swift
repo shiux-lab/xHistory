@@ -21,11 +21,9 @@ func getActiveWindowGeometry() -> (x: Int, y: Int, width: Int, height: Int)? {
     return nil
 }
 
-func openCustomURLWithActiveWindowGeometry(file: String? = nil) {
+func openCustomURLWithActiveWindowGeometry(prompt: String = "") {
     if let geometry = getActiveWindowGeometry() {
-        var histFile = ""
-        if let file = file { histFile = "&file=\(file)" }
-        if let url = URL(string: "xhistory://show?x=\(geometry.x)&y=\(geometry.y)&w=\(geometry.width)&h=\(geometry.height)\(histFile)") {
+        if let url = URL(string: "xhistory://show?x=\(geometry.x)&y=\(geometry.y)&w=\(geometry.width)&h=\(geometry.height)\(prompt)") {
             _ = try? NSWorkspace.shared.open(url, options: [.withoutActivation],  configuration: [:] )
         }
     }

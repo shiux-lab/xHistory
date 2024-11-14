@@ -7,6 +7,24 @@
 
 import SwiftUI
 
+struct HoverButton<Content: View>: View {
+    var color: Color = .primary
+    var secondaryColor: Color = .blue
+    var action: () -> Void
+    @ViewBuilder let label: () -> Content
+    @State private var isHovered: Bool = false
+    
+    var body: some View {
+        Button(action: {
+            action()
+        }, label: {
+            label().foregroundStyle(isHovered ? secondaryColor : color)
+        })
+        .buttonStyle(.plain)
+        .onHover(perform: { isHovered = $0 })
+    }
+}
+
 struct SForm<Content: View>: View {
     var spacing: CGFloat = 30
     var noSpacer: Bool = false
@@ -178,7 +196,7 @@ struct SPicker<T: Hashable, Content: View, Style: PickerStyle>: View {
             Text(title)
             Spacer()
             if let tips = tips { SInfoButton(tips: tips) }
-            Picker("", selection: $selection) { content() }
+            Picker(selection: $selection, content: { content() }, label: {})
                 .fixedSize()
                 .pickerStyle(style)
                 .buttonStyle(.borderless)
@@ -198,7 +216,7 @@ struct SToggle: View {
     }
     
     var body: some View {
-        HStack {
+        HStack(spacing: 4) {
             Text(title)
             Spacer()
             if let tips = tips { SInfoButton(tips: tips) }

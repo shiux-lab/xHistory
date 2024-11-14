@@ -11,10 +11,12 @@ import Sparkle
 import SFSMonitor
 //import UserNotifications
 import KeyboardShortcuts
+import SystemConfiguration
 
 //let nc = NSWorkspace.shared.notificationCenter
 let ud = UserDefaults.standard
 let fd = FileManager.default
+let cloudFileExtension = "xha"
 let queue = SFSMonitor(delegate: HistoryCopyer.shared)
 let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
 let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
@@ -37,12 +39,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
     @AppStorage("statusIconName") var statusIconName = "menuBar"
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("statusBar") var statusBar = true
-    @AppStorage("showPinned") var showPinned = false
+    //@AppStorage("showPinned") var showPinned = false
     @AppStorage("swapButtons") var swapButtons = false
+    @AppStorage("cloudSync") var cloudSync = false
+    @AppStorage("cloudDirectory") var cloudDirectory = ""
+    //@AppStorage("dockIcon") var dockIcon = false
     
     func applicationWillFinishLaunching(_ notification: Notification) {
+        //if dockIcon { NSApp.setActivationPolicy(.regular) }
         updateShellConfig()
         ud.register(defaults: ["blockedCommands": ["xhistory"]])
+#if RELEASE
         let bashrc = homeDirectory.appendingPathComponent(".bash_profile")
         let zshrc = homeDirectory.appendingPathComponent(".zshrc")
         try? createEmptyFile(at: bashrc)
@@ -60,7 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             if !zRC.contains(zshC2) { try? appendLine(to: zshrc, line: "\n\(zshC2)") }
             if !zRC.contains(zshC3) { try? appendLine(to: zshrc, line: "\n\(zshC3)") }
         }
-        
+#endif
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURLEvent(_:replyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         /*UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -71,11 +78,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
         KeyboardShortcuts.onKeyDown(for: .showPanel) { self.openMainPanel() }
         KeyboardShortcuts.onKeyDown(for: .showOverlay) { openCustomURLWithActiveWindowGeometry() }
         KeyboardShortcuts.onKeyDown(for: .showPinnedPanel) {
-            self.showPinned = true
+            PageState.shared.pageID = 2
             self.openMainPanel()
         }
         KeyboardShortcuts.onKeyDown(for: .showPinnedOverlay) {
-            self.showPinned = true
+            PageState.shared.pageID = 2
             openCustomURLWithActiveWindowGeometry()
         }
         
@@ -83,7 +90,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             button.target = self
             button.image = NSImage(named: statusIconName)
             button.action = #selector(togglePopover(_ :))
-            menuPopover.contentSize = NSSize(width: 500, height: 357)
+            menuPopover.contentSize = NSSize(width: 500, height: 352)
             menuPopover.setValue(true, forKeyPath: "shouldHideAnchor")
             menuPopover.behavior = .transient
         }
@@ -128,11 +135,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
         mainPanel.title = "xHistory Panel".local
         mainPanel.level = .floating
         mainPanel.isOpaque = false
-        mainPanel.hasShadow = false
+        //mainPanel.hasShadow = false
         mainPanel.titleVisibility = .hidden
         mainPanel.titlebarAppearsTransparent = true
         mainPanel.isReleasedWhenClosed = false
-        mainPanel.isMovableByWindowBackground = false
+        mainPanel.isMovableByWindowBackground = true
         mainPanel.becomesKeyOnlyIfNeeded = true
         mainPanel.backgroundColor = .clear
         mainPanel.collectionBehavior = [.canJoinAllSpaces]
@@ -182,6 +189,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
                             openMainPanel(file: file)
                             if let screen = mainPanel.screen {
                                 mainPanel.setFrame(NSRect(x: xInt, y: Int(screen.frame.height) - yInt - hInt, width: wInt, height: hInt - 28), display: true)
+                                if let mode = queryItems?.first(where: { $0.name == "mode" })?.value {
+                                    switch mode {
+                                    case "pinned": PageState.shared.pageID = 2
+                                    case "archive":
+                                        if cloudSync && cloudDirectory != "" {
+                                            PageState.shared.pageID = 3
+                                        }
+                                    default: PageState.shared.pageID = 1
+                                    }
+                                }
                             } else {
                                 mainPanel.orderOut(self)
                             }
@@ -190,6 +207,42 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
                 default: print("Unknow command!")
                 }
             }
+        }
+    }
+}
+
+func findNSSplitVIew(view: NSView?) -> NSSplitView? {
+    var queue = [NSView]()
+    if let root = view { queue.append(root) }
+    
+    while !queue.isEmpty {
+        let current = queue.removeFirst()
+        if current is NSSplitView { return current as? NSSplitView }
+        for subview in current.subviews { queue.append(subview) }
+    }
+    return nil
+}
+
+func openSettingPanel() {
+    NSApp.activate(ignoringOtherApps: true)
+    if #available(macOS 14, *) {
+        NSApp.mainMenu?.items.first?.submenu?.item(at: 2)?.performAction()
+    }else if #available(macOS 13, *) {
+        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+    } else {
+        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+    }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        if let w = NSApp.windows.first(where: { $0.title == "xHistory Settings".local }) {
+            w.level = .floating
+            w.titlebarSeparatorStyle = .none
+            guard let nsSplitView = findNSSplitVIew(view: w.contentView),
+                  let controller = nsSplitView.delegate as? NSSplitViewController else { return }
+            controller.splitViewItems.first?.canCollapse = false
+            controller.splitViewItems.first?.minimumThickness = 140
+            controller.splitViewItems.first?.maximumThickness = 140
+            w.makeKeyAndOrderFront(nil)
+            w.makeKey()
         }
     }
 }
@@ -208,6 +261,29 @@ func getMenuBarHeight() -> CGFloat {
     return 0.0
 }
 
+func getMacDeviceName() -> String {
+    @AppStorage("machineType") var machineType = "mac"
+    var computerName: CFString?
+    if let dynamicStore = SCDynamicStoreCreate(nil, "GetComputerName" as CFString, nil, nil) {
+        computerName = SCDynamicStoreCopyComputerName(dynamicStore, nil) as CFString?
+    }
+    if let name = computerName as String? { return name }
+    return machineType
+}
+
+func getMacDeviceUUID() -> String? {
+    let dev = IOServiceMatching("IOPlatformExpertDevice")
+    let platformExpert: io_service_t = IOServiceGetMatchingService(kIOMainPortDefault, dev)
+    if platformExpert != 0 {
+        if let serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert, kIOPlatformUUIDKey as CFString, kCFAllocatorDefault, 0)?.takeUnretainedValue() {
+            IOObjectRelease(platformExpert)
+            return serialNumberAsCFString as? String
+        }
+        IOObjectRelease(platformExpert)
+    }
+    return nil
+}
+
 func createEmptyFile(at fileURL: URL) throws {
     if !fd.fileExists(atPath: fileURL.path) {
         do {
@@ -219,7 +295,7 @@ func createEmptyFile(at fileURL: URL) throws {
     }
 }
 
-func appendLine(to fileURL: URL, line: String) throws {
+func appendLine(to fileURL: URL, line: String, encoding: String.Encoding = .utf8) throws {
     let newLine = line + "\n"
     
     if let fileHandle = FileHandle(forWritingAtPath: fileURL.path) {
@@ -227,7 +303,7 @@ func appendLine(to fileURL: URL, line: String) throws {
         fileHandle.seekToEndOfFile()
         if let data = newLine.data(using: .utf8) { fileHandle.write(data) }
     } else {
-        try newLine.write(to: fileURL, atomically: true, encoding: .utf8)
+        try newLine.write(to: fileURL, atomically: true, encoding: encoding)
     }
 }
 
@@ -302,47 +378,6 @@ extension String {
     }
     var absolutePath: String {
         return (self as NSString).expandingTildeInPath
-    }
-}
-
-extension URL {
-    var readHistory: String? {
-        do {
-            return try String(contentsOf: self, encoding: .utf8)
-        } catch {
-            return self.readZshHistory
-        }
-    }
-    
-    var readZshHistory: String? {
-        var zshHistoryContent = ""
-        func unmetafy(_ bytes: inout [UInt8]) -> String {
-            var index = 0
-            let zshMeta: UInt8 = 0x83
-            
-            while index < bytes.count {
-                if bytes[index] == zshMeta {
-                    bytes.remove(at: index)
-                    if index < bytes.count { bytes[index] ^= 32 }
-                } else {
-                    index += 1
-                }
-            }
-            return String(decoding: bytes, as: UTF8.self)
-        }
-        
-        if let fileHandle = FileHandle(forReadingAtPath: self.path) {
-            defer { fileHandle.closeFile() }
-            let data = fileHandle.readDataToEndOfFile()
-            let lines = data.split(separator: 0x0A)
-            for lineData in lines {
-                var lineBytes = [UInt8](lineData)
-                let processedLine = unmetafy(&lineBytes)
-                zshHistoryContent += "\(processedLine)\n"
-            }
-            return zshHistoryContent
-        }
-        return nil
     }
 }
 
