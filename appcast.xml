@@ -3,6 +3,28 @@
     <channel>
         <title>xHistory</title>
         <item>
+            <title>v0.1.3</title>
+            <pubDate>Thu, 14 Nov 2024 16:47:57 +0800</pubDate>
+            <sparkle:version>13</sparkle:version>
+            <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>ul{margin-top: 0;margin-bottom: 7;padding-left: 18;}</style><ul>
+                <li>添加了云存档功能, 支持在多台 Mac 之间互相查询历史记录</li>
+                <li>修复了一些已知的问题</li>
+                </ul><ul>
+                <li>Support cloud archiving, you can see the command history of another Mac</li>
+                <li>Fixed some known issues</li>
+                </ul><img src="https://github.com/lihaoyun6/xHistory/raw/main/img/donate.png" width="280"/>
+            ]]></description>
+            <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.3/xHistory_v0.1.3.dmg" length="3823388" type="application/octet-stream" sparkle:edSignature="kfKdtKnLCwid1gblcrK6NV9Y8D+nGB+5bBVT16BG7v6FXK966UoUZczxJfOzzg/BNNvFgfEpYfKve36J5pchDg=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.3/xUpdate13-12.delta" sparkle:deltaFrom="12" length="591226" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="68KIcn1ZWxgKxgzanFKPvzounHXMTLfb6NdxWpuZYaGTO7cC0Ru1Mlw+jopYawsMAb1xjnQdOyK6AHhHC+nCAA=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.3/xUpdate13-11.delta" sparkle:deltaFrom="11" length="637234" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="yUa67gnte7Y6RjfqPdn7vzIpbQxm3po0s+sb03ZCDTorNKNC7KWIRE8/H6/3tc30zPvY4okZF2cD77Z6XPO3DQ=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.3/xUpdate13-1.delta" sparkle:deltaFrom="1" length="664062" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="qf2ujr+sGmVHzpeyO8JuhIErmpOHzx1Pekn3vrxTgYrouhpq6VqFnNAIhBB8n3t3G31UpE57c8zli3Gac6dQDQ=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>v0.1.2</title>
             <pubDate>Mon, 11 Nov 2024 23:13:14 +0800</pubDate>
             <sparkle:version>12</sparkle:version>
