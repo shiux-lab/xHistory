@@ -49,7 +49,10 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         var lines = fileURL.readHistory?.components(separatedBy: .newlines).map({ $0.trimmingCharacters(in: .whitespaces) }) ?? []
         lines = lines.filter({ !$0.isEmpty })
         if preFormatter != "" { lines = lines.format(usingRegex: preFormatter) }
-        lines.removeAll(where: { blockedItems.contains($0) })
+        let normalBlock = blockedItems.filter({ !$0.startsWith(character: "#") })
+        let regexBlock = blockedItems.filter({ $0.startsWith(character: "#") }).map({ String($0.dropFirst()) })
+        lines.removeAll(where: { normalBlock.contains($0) })
+        lines = filterNonMatchingStrings(regexList: regexBlock, stringList: lines)
         if noSameLine { return lines.removingAdjacentDuplicates() }
         return lines
     }
@@ -69,6 +72,22 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         for cmd in HistoryCopyer.shared.readHistory() {
             SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd) { _ in }
         }
+    }
+    
+    func filterNonMatchingStrings(regexList: [String], stringList: [String]) -> [String] {
+        let regexPatterns = regexList.compactMap { pattern in
+            try? NSRegularExpression(pattern: pattern)
+        }
+        let nonMatchingStrings = stringList.filter { string in
+            for regex in regexPatterns {
+                let range = NSRange(location: 0, length: string.utf16.count)
+                if regex.firstMatch(in: string, options: [], range: range) != nil {
+                    return false
+                }
+            }
+            return true
+        }
+        return nonMatchingStrings
     }
 }
 

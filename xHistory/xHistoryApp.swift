@@ -40,7 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("statusBar") var statusBar = true
     //@AppStorage("showPinned") var showPinned = false
-    @AppStorage("swapButtons") var swapButtons = false
+    @AppStorage("buttonSide") var buttonSide = "right"
     @AppStorage("cloudSync") var cloudSync = false
     @AppStorage("cloudDirectory") var cloudDirectory = ""
     //@AppStorage("dockIcon") var dockIcon = false
@@ -74,7 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
             if let error = error { print("⚠️ Notification authorization denied: \(error.localizedDescription)") }
         }
         UNUserNotificationCenter.current().delegate = self*/
-        KeyboardShortcuts.onKeyDown(for: .swapButtons) { self.swapButtons.toggle() }
+        //KeyboardShortcuts.onKeyDown(for: .swapButtons) { self.swapButtons.toggle() }
         KeyboardShortcuts.onKeyDown(for: .showPanel) { self.openMainPanel() }
         KeyboardShortcuts.onKeyDown(for: .showOverlay) { openCustomURLWithActiveWindowGeometry() }
         KeyboardShortcuts.onKeyDown(for: .showPinnedPanel) {
@@ -378,6 +378,12 @@ extension String {
     }
     var absolutePath: String {
         return (self as NSString).expandingTildeInPath
+    }
+    func startsWith(character: Character) -> Bool {
+        guard let firstChar = self.first else {
+            return false
+        }
+        return firstChar == character
     }
 }
 

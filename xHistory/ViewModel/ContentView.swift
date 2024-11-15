@@ -101,6 +101,7 @@ struct ContentView: View {
     @AppStorage("regexSearch") var regexSearch = false
     @AppStorage("cloudSync") var cloudSync = false
     @AppStorage("cloudDirectory") var cloudDirectory = ""
+    @AppStorage("buttonSide") var buttonSide = "right"
 
     @StateObject private var data = HistoryCopyer.shared
     @StateObject private var state = PageState.shared
@@ -122,6 +123,12 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: Alignment(horizontal: .trailing, vertical: .top)) {
+            ZStack {
+                Button("") { if buttonSide == "right" { buttonSide = "left" } }
+                    .keyboardShortcut(.leftArrow, modifiers: [.command])
+                Button("") { if buttonSide == "left" { buttonSide = "right" } }
+                    .keyboardShortcut(.rightArrow, modifiers: [.command])
+            }.opacity(0)
             if !fromMenubar {
                 Color.clear
                     .background(.thinMaterial)
@@ -346,31 +353,108 @@ struct ContentView: View {
     }
 }
 
+struct ActionButtons: View {
+    var command: String
+    
+    @Binding var showMore: Bool
+    @Binding var pinnedList: [String]
+    
+    @State private var copied: Bool = false
+    @State private var boomList = [String]()
+    @State private var boomMode: Bool = false
+    
+    var body: some View {
+        HStack(spacing: 5) {
+            HoverButton(
+                color: .secondary,
+                action: {
+                    copyToPasetboard(text: command)
+                    copied = true
+                    withAnimation(.easeInOut(duration: 1)) { copied = false }
+                }, label: {
+                    Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(width: 12)
+                        .frame(maxHeight: .infinity)
+                })
+            HoverButton(
+                color: .secondary,
+                action: {
+                    if pinnedList.contains(command) {
+                        pinnedList.removeAll(where: { $0 == command })
+                    } else {
+                        pinnedList.append(command)
+                    }
+                    ud.set(pinnedList, forKey: "pinnedList")
+                }, label: {
+                    Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
+                        .font(.system(size: 13, weight: .bold))
+                        .rotationEffect(.degrees(45))
+                        .frame(width: 14)
+                        .frame(maxHeight: .infinity)
+                })
+            HoverButton(
+                color: .secondary,
+                action: {
+                    if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
+                        let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
+                        boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
+                        boomMode = true
+                    }
+                }, label: {
+                    Image(systemName: showMore ? "character.cursor.ibeam" : "rectangle.expand.vertical")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 14)
+                        .frame(maxHeight: .infinity)
+                }).onHover { hovering in showMore = hovering }
+        }
+        .onChange(of: boomList) { _ in boomMode = true }
+        .sheet(isPresented: $boomMode) {
+            VStack(spacing: 10) {
+                GroupBox(label: Text("Magic Slice").font(.headline)) {
+                    FlowLayout(items: boomList, spacing: 6) { item in CommandSliceView(command: item) }
+                }
+                GroupBox(label: Text("Manual Selection").font(.headline)) {
+                    Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command)))
+                        .font(.system(size: 11, weight: .regular, design: .monospaced))
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(nil)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                        .padding(2)
+                }
+                HStack {
+                    Spacer()
+                    Button("Close") { boomMode = false }
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+            .padding()
+            .focusable(false)
+        }
+    }
+}
+
 struct CommandView: View {
     var index: Int
     var command: String
     
     @Binding var pinnedList: [String]
-    //@Binding var scrollToTop: Bool
     var fromMenubar: Bool = false
     
     @AppStorage("panelOpacity") var panelOpacity = 100
     @AppStorage("autoClose") var autoClose = false
     @AppStorage("autoSpace") var autoSpace = false
     @AppStorage("autoReturn") var autoReturn = false
-    @AppStorage("swapButtons") var swapButtons = false
+    @AppStorage("buttonSide") var buttonSide = "right"
     
-    @State private var boomList = [String]()
     @State private var isHovered: Bool = false
-    @State private var shwoMore: Bool = false
-    @State private var boomMode: Bool = false
-    @State private var copied: Bool = false
-    //@State private var highlightedText: AttributedString = AttributedString("")
+    @State private var showMore: Bool = false
     
     var body: some View {
         HStack(spacing: 6) {
             Text((0...8).contains(index) ? "⌘\(index + 1)" : "\(index + 1)")
-                .font(.system(size: 11, weight: .regular))
+                .font(.system(size: 11, weight: (0...8).contains(index) ? .bold : .regular))
                 .foregroundStyle(isHovered ? .white : .primary)
                 .padding(.horizontal, 2)
                 .lineLimit(1)
@@ -385,51 +469,9 @@ struct CommandView: View {
                     }
                 }
             HStack(spacing: 0) {
-                if swapButtons {
-                    HStack(spacing: 5) {
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                copyToPasetboard(text: command)
-                                copied = true
-                                withAnimation(.easeInOut(duration: 1)) { copied = false }
-                            }, label: {
-                                Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .frame(width: 12)
-                                    .frame(maxHeight: .infinity)
-                            })
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                if pinnedList.contains(command) {
-                                    pinnedList.removeAll(where: { $0 == command })
-                                } else {
-                                    pinnedList.append(command)
-                                }
-                                ud.set(pinnedList, forKey: "pinnedList")
-                            }, label: {
-                                Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .rotationEffect(.degrees(45))
-                                    .frame(width: 14)
-                                    .frame(maxHeight: .infinity)
-                            })
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
-                                    let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
-                                    boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
-                                    boomMode = true
-                                }
-                            }, label: {
-                                Image(systemName: shwoMore ? "character.cursor.ibeam" : "rectangle.expand.vertical")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .frame(width: 14)
-                                    .frame(maxHeight: .infinity)
-                            }).onHover { hovering in shwoMore = hovering }
-                    }.padding(.leading, 8)
+                if buttonSide == "left" {
+                    ActionButtons(command: command, showMore: $showMore, pinnedList: $pinnedList)
+                        .padding(.leading, 8)
                 }
                 Button(action: {
                     copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")", enter: autoReturn)
@@ -444,7 +486,7 @@ struct CommandView: View {
                             Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command)))
                                 .font(.system(size: 11, weight: .regular, design: .monospaced))
                                 .multilineTextAlignment(.leading)
-                                .lineLimit(shwoMore ? nil : 1)
+                                .lineLimit(showMore ? nil : 1)
                                 .padding(6)
                                 .padding(.leading, 2)
                             Spacer()
@@ -453,51 +495,9 @@ struct CommandView: View {
                 })
                 .buttonStyle(.plain)
                 .setHotkey(index: index)
-                if !swapButtons {
-                    HStack(spacing: 5) {
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                copyToPasetboard(text: command)
-                                copied = true
-                                withAnimation(.easeInOut(duration: 1)) { copied = false }
-                            }, label: {
-                                Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .frame(width: 12)
-                                    .frame(maxHeight: .infinity)
-                            })
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                if pinnedList.contains(command) {
-                                    pinnedList.removeAll(where: { $0 == command })
-                                } else {
-                                    pinnedList.append(command)
-                                }
-                                ud.set(pinnedList, forKey: "pinnedList")
-                            }, label: {
-                                Image(systemName: pinnedList.contains(command) ? "pin.fill" : "pin")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .rotationEffect(.degrees(45))
-                                    .frame(width: 14)
-                                    .frame(maxHeight: .infinity)
-                            })
-                        HoverButton(
-                            color: .secondary,
-                            action: {
-                                if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
-                                    let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
-                                    boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
-                                    boomMode = true
-                                }
-                            }, label: {
-                                Image(systemName: shwoMore ? "character.cursor.ibeam" : "rectangle.expand.vertical")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .frame(width: 14)
-                                    .frame(maxHeight: .infinity)
-                            }).onHover { hovering in shwoMore = hovering }
-                    }.padding(.trailing, 7)
+                if buttonSide == "right" {
+                    ActionButtons(command: command, showMore: $showMore, pinnedList: $pinnedList)
+                        .padding(.trailing, 8)
                 }
             }
             .background(Color.background.opacity((isHovered || fromMenubar) ? 1.0 : Double(panelOpacity) / 100))
@@ -509,83 +509,52 @@ struct CommandView: View {
             }
             .mask(RoundedRectangle(cornerRadius: 5, style: .continuous))
             .onHover { hovering in isHovered = hovering }
-            .sheet(isPresented: $boomMode) {
-                VStack(spacing: 10) {
-                    GroupBox(label: Text("Magic Slice").font(.headline)) {
-                        FlowLayout(items: boomList, spacing: 6) { item in CommandSliceView(command: item) }
-                    }
-                    GroupBox(label: Text("Manual Selection").font(.headline)) {
-                        Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command)))
-                            .font(.system(size: 11, weight: .regular, design: .monospaced))
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(nil)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .padding(2)
-                    }
-                    HStack {
-                        Spacer()
-                        Button("Close") { boomMode = false }
-                            .keyboardShortcut(.defaultAction)
-                    }
-                }
-                .padding()
-                .focusable(false)
-            }
-            .onChange(of: boomList) { _ in boomMode = true }
         }
-        /*.onAppear{
-            highlightedText = AttributedString(command)
-            //boomList = highlighter.bashHighlighterList(command)
-            highlighter.getHighlightedTextAsync(for: command) { result in
-                highlightedText = AttributedString(result)
-            }
-        }*/
     }
+}
+
+struct CommandSliceView: View {
+    var command: String
+    @State private var isHovered: Bool = false
+    @State private var copied: Bool = false
     
-    struct CommandSliceView: View {
-        var command: String
-        @State private var isHovered: Bool = false
-        @State private var copied: Bool = false
-        
-        var body: some View {
-            HStack(spacing: 0) {
-                Button(action: {
-                    copyToPasteboardAndPaste(text: command)
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: {
+                copyToPasteboardAndPaste(text: command)
+            }, label: {
+                Text(command)
+                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                    .lineLimit(nil)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 8)
+                    .padding(.trailing, 14)
+            }).buttonStyle(.plain)
+            HoverButton(
+                color: .secondary,
+                action: {
+                    copyToPasetboard(text: command)
+                    copied = true
+                    withAnimation(.easeInOut(duration: 1)) { copied = false }
                 }, label: {
-                    Text(command)
-                        .font(.system(size: 11, weight: .regular, design: .monospaced))
-                        .lineLimit(nil)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 8)
-                        .padding(.trailing, 14)
-                }).buttonStyle(.plain)
-                HoverButton(
-                    color: .secondary,
-                    action: {
-                        copyToPasetboard(text: command)
-                        copied = true
-                        withAnimation(.easeInOut(duration: 1)) { copied = false }
-                    }, label: {
-                        Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
-                            .resizable().scaledToFit()
-                            .font(.system(size: 12, weight: .medium))
-                            .frame(width: 12)
-                    }).padding(.leading, -18)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(.background2)
-                    .shadow(color: .secondary.opacity(0.8), radius: 0.3, y: 0.5)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .stroke(.blue, lineWidth: isHovered ? 2 : 0)
-                    .padding(1)
-            }
-            .onHover { hovering in isHovered = hovering }
-            .focusable(false)
+                    Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.clipboard")
+                        .resizable().scaledToFit()
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(width: 12)
+                }).padding(.leading, -18)
         }
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(.background2)
+                .shadow(color: .secondary.opacity(0.8), radius: 0.3, y: 0.5)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                .stroke(.blue, lineWidth: isHovered ? 2 : 0)
+                .padding(1)
+        }
+        .onHover { hovering in isHovered = hovering }
+        .focusable(false)
     }
 }
 

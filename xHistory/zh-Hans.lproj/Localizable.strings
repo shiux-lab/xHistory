@@ -99,3 +99,7 @@
 "Are you sure?" = "确认进行此操作吗?";
 "You will not be able to recover it!" = "此操作无法复原, 请谨慎确认!";
 "Delete This Archive?" = "确认要删除此存档吗?";
+"You can add a \"#\" at the beginning of a keyword to convert it to a regex pattern." = "在任屏蔽词条前添加 # 号, 即可让 xHistory 将视为正则表达式来进行匹配.";
+"Switch to \"History\" page" = "切换至\"历史记录\"页面";
+"Switch to \"Pinned\" page" = "切换至\"命令收藏\"页面";
+"Switch to \"Archive\" page" = "切换至\"云端存档\"页面";
