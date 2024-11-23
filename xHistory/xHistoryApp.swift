@@ -31,6 +31,21 @@ struct xHistoryApp: App {
     var body: some Scene {
         Settings {
             SettingsView()
+                .background(
+                    WindowAccessor(
+                        onWindowOpen: { w in
+                            if let w = w {
+                                w.level = .floating
+                                w.titlebarSeparatorStyle = .none
+                                guard let nsSplitView = findNSSplitVIew(view: w.contentView),
+                                      let controller = nsSplitView.delegate as? NSSplitViewController else { return }
+                                controller.splitViewItems.first?.canCollapse = false
+                                controller.splitViewItems.first?.minimumThickness = 140
+                                controller.splitViewItems.first?.maximumThickness = 140
+                                w.orderFront(nil)
+                            }
+                        })
+                )
         }
     }
 }
@@ -187,20 +202,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
                         if let xInt = Int(x), let yInt = Int(y), let wInt = Int(w), let hInt = Int(h) {
                             let file = queryItems?.first(where: { $0.name == "file" })?.value
                             openMainPanel(file: file)
-                            if let screen = mainPanel.screen {
-                                mainPanel.setFrame(NSRect(x: xInt, y: Int(screen.frame.height) - yInt - hInt, width: wInt, height: hInt - 28), display: true)
-                                if let mode = queryItems?.first(where: { $0.name == "mode" })?.value {
-                                    switch mode {
-                                    case "pinned": PageState.shared.pageID = 2
-                                    case "archive":
-                                        if cloudSync && cloudDirectory != "" {
-                                            PageState.shared.pageID = 3
-                                        }
-                                    default: PageState.shared.pageID = 1
+                            let bound = CGRectTransform(cgRect: CGRect(x: xInt, y: yInt + 28, width: wInt, height: hInt - 28))
+                            mainPanel.setFrame(bound, display: true)
+                            if let mode = queryItems?.first(where: { $0.name == "mode" })?.value {
+                                switch mode {
+                                case "pinned": PageState.shared.pageID = 2
+                                case "archive":
+                                    if cloudSync && cloudDirectory != "" {
+                                        PageState.shared.pageID = 3
                                     }
+                                default: PageState.shared.pageID = 1
                                 }
-                            } else {
-                                mainPanel.orderOut(self)
                             }
                         }
                     }
@@ -223,6 +235,17 @@ func findNSSplitVIew(view: NSView?) -> NSSplitView? {
     return nil
 }
 
+func CGRectTransform(cgRect: CGRect) -> NSRect {
+    let x = cgRect.origin.x
+    let y = cgRect.origin.y
+    let w = cgRect.width
+    let h = cgRect.height
+    if let main = NSScreen.screens.first(where: { $0.isMainScreen }) {
+        return NSRect(x: x, y: main.frame.height - y - h, width: w, height: h)
+    }
+    return cgRect
+}
+
 func openSettingPanel() {
     NSApp.activate(ignoringOtherApps: true)
     if #available(macOS 14, *) {
@@ -231,19 +254,6 @@ func openSettingPanel() {
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     } else {
         NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-    }
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-        if let w = NSApp.windows.first(where: { $0.title == "xHistory Settings".local }) {
-            w.level = .floating
-            w.titlebarSeparatorStyle = .none
-            guard let nsSplitView = findNSSplitVIew(view: w.contentView),
-                  let controller = nsSplitView.delegate as? NSSplitViewController else { return }
-            controller.splitViewItems.first?.canCollapse = false
-            controller.splitViewItems.first?.minimumThickness = 140
-            controller.splitViewItems.first?.maximumThickness = 140
-            w.makeKeyAndOrderFront(nil)
-            w.makeKey()
-        }
     }
 }
 
@@ -393,5 +403,15 @@ extension NSMenuItem {
             return
         }
         menu.performActionForItem(at: menu.index(of: self))
+    }
+}
+
+extension NSScreen {
+    var displayID: CGDirectDisplayID? {
+        return deviceDescription[NSDeviceDescriptionKey(rawValue: "NSScreenNumber")] as? CGDirectDisplayID
+    }
+    var isMainScreen: Bool {
+        guard let id = self.displayID else { return false }
+        return (CGDisplayIsMain(id) == 1)
     }
 }
