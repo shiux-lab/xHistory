@@ -3,6 +3,26 @@
     <channel>
         <title>xHistory</title>
         <item>
+            <title>v0.1.5</title>
+            <pubDate>Sun, 24 Nov 2024 00:16:44 +0800</pubDate>
+            <sparkle:version>15</sparkle:version>
+            <sparkle:shortVersionString>0.1.5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>ul{margin-top: 0;margin-bottom: 7;padding-left: 18;}</style><ul>
+                <li>修复了多显示器场景下, 叠加层窗口可能偏离正确位置的问题.</li>
+                </ul><ul>
+                <li>Fixed: Overlay window position could become offset when using multiple monitors.</li>
+                </ul><img src="https://github.com/lihaoyun6/xHistory/raw/main/img/donate.png" width="300"/>
+            ]]></description>
+            <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.5/xHistory_v0.1.5.dmg" length="3831513" type="application/octet-stream" sparkle:edSignature="d/4BouCCy27dViZhNjI3msza/2sxvxtux0/0TMZUFeE57piPt8yuXNXJhbPAXgBgqZBUjuKeZW0PnxnsDxHGAQ=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.5/xUpdate15-14.delta" sparkle:deltaFrom="14" length="239258" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="DtRMJYV3VOmqvKmnlVrCGUx6/Id3WlyviPR3KhCKIgtgvqqm3FFc+8irJzh7ggovfu4FpTc3AMCeyviH4B1rBA=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.5/xUpdate15-13.delta" sparkle:deltaFrom="13" length="365050" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="5CPBU76Z//Nxn5cyWNNLC3hsxrPW5TAf9opf8Ybm5Pnz6OIUB2LmFTi02bbopMpP7OeipxuxIBc+ll1ty0ThCw=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.5/xUpdate15-12.delta" sparkle:deltaFrom="12" length="632602" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="xhAusAOVZk5kNh4lDN0gimowD4rbqKSx5k3pT1sRkVJLBuCwGjvl/98U7mKZrdUyGv/asijfsbscxA0FDzv/Dg=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>v0.1.4</title>
             <pubDate>Fri, 15 Nov 2024 21:42:33 +0800</pubDate>
             <sparkle:version>14</sparkle:version>
