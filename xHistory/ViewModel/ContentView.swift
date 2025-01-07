@@ -518,10 +518,19 @@ struct CommandSliceView: View {
     @State private var isHovered: Bool = false
     @State private var copied: Bool = false
     
+    @Environment(\.presentationMode) var presentationMode
+    @AppStorage("autoClose") var autoClose = false
+    @AppStorage("autoSpace") var autoSpace = false
+    
     var body: some View {
         HStack(spacing: 0) {
             Button(action: {
-                copyToPasteboardAndPaste(text: command)
+                copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")")
+                if autoClose {
+                    presentationMode.wrappedValue.dismiss()
+                    mainPanel.close()
+                    menuPopover.performClose(self)
+                }
             }, label: {
                 Text(command)
                     .font(.system(size: 11, weight: .regular, design: .monospaced))

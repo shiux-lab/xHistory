@@ -117,7 +117,16 @@ struct GeneralView: View {
             }
             SGroupBox(label: "Update") { UpdaterSettingsView(updater: updaterController.updater) }
             VStack(spacing: 8) {
-                CheckForUpdatesView(updater: updaterController.updater)
+                HStack {
+                    CheckForUpdatesView(updater: updaterController.updater)
+                    if !statusBar {
+                        Button(action: {
+                            NSApp.terminate(self)
+                        }, label: {
+                            Text("Quit".local + " xHistory").foregroundStyle(.red)
+                        })
+                    }
+                }
                 if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
                     Text("xHistory v\(appVersion)")
                         .font(.subheadline)

@@ -35,7 +35,7 @@ struct xHistoryApp: App {
                     WindowAccessor(
                         onWindowOpen: { w in
                             if let w = w {
-                                w.level = .floating
+                                //w.level = .floating
                                 w.titlebarSeparatorStyle = .none
                                 guard let nsSplitView = findNSSplitVIew(view: w.contentView),
                                       let controller = nsSplitView.delegate as? NSSplitViewController else { return }
