@@ -70,8 +70,10 @@
 "Automatically download updates" = "自动下载程序更新";
 "Check for Updates…" = "检查程序更新…";
 "Shell" = "命令行";
+"The one used is ohmyzsh" = "使用的是OhMyZsh";
+"This will identify the execution timestamp of the command." = "这会识别命令的执行时间戳。";
 "Shell Configuration" = "命令行设置";
-"Custom Configuration (for Bash & Zsh)"= "启用自定义配置 (针对 Bash 和 Zsh)";
+"Custom Configuration (for Bash & Zsh)" = "启用自定义配置 (针对 Bash 和 Zsh)";
 "Real-time History Saving" = "实时保存历史记录";
 "Ignore Consecutive Duplicates" = "忽略连续的重复记录";
 "Maximum Number of History Items" = "历史记录保存数量";

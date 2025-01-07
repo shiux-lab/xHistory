@@ -13,7 +13,7 @@ class PageState: ObservableObject {
     @Published var pageID: Int = 1
     @Published var archiveList: [String] = []
     @Published var archiveName: String = ""
-    @Published var archiveData: [String] = []
+    @Published var archiveData: [CommandItem] = []
 }
 
 struct SearchGroup: View {
@@ -113,10 +113,10 @@ struct ContentView: View {
     //@State private var archiveData: [String] = []
     //@State private var showPin = 0
     @State private var overQuit: Bool = false
-    @State private var result: [String] = []
-    @State private var resultP: [String] = []
-    @State private var resultA: [String] = []
-    @State private var pinnedList = (ud.object(forKey: "pinnedList") ?? []) as! [String]
+    @State private var result: [CommandItem] = []
+    @State private var resultP: [CommandItem] = []
+    @State private var resultA: [CommandItem] = []
+    @State private var pinnedList = (ud.object(forKey: "pinnedList") ?? []) as! [CommandItem]
     //@State private var archiveList = getCloudFiles()
     
     var fromMenubar: Bool = false
@@ -328,7 +328,7 @@ struct ContentView: View {
         }
     }
     
-    func searchHistory(_ data: [String]) -> [String] {
+    func searchHistory(_ data: [CommandItem]) -> [CommandItem] {
         if !keyWord.isEmpty && !(keyWord == "") {
             if regexSearch {
                 do {
@@ -336,8 +336,8 @@ struct ContentView: View {
                     let regex = try NSRegularExpression(pattern: keyWord, options: options)
                     
                     let matchingItems = data.filter { item in
-                        let range = NSRange(location: 0, length: item.utf16.count)
-                        return regex.firstMatch(in: item, options: [], range: range) != nil
+                        let range = NSRange(location: 0, length: item.command.utf16.count)
+                        return regex.firstMatch(in: item.command, options: [], range: range) != nil
                     }
                     return matchingItems
                 } catch {
@@ -346,7 +346,7 @@ struct ContentView: View {
                 }
             } else {
                 let options: String.CompareOptions = caseSensitivity ? [] : [.caseInsensitive]
-                return data.filter { $0.range(of: keyWord, options: options) != nil }
+                return data.filter { $0.command.range(of: keyWord, options: options) != nil }
             }
         }
         return data
@@ -354,10 +354,10 @@ struct ContentView: View {
 }
 
 struct ActionButtons: View {
-    var command: String
+    var command: CommandItem
     
     @Binding var showMore: Bool
-    @Binding var pinnedList: [String]
+    @Binding var pinnedList: [CommandItem]
     
     @State private var copied: Bool = false
     @State private var boomList = [String]()
@@ -368,7 +368,7 @@ struct ActionButtons: View {
             HoverButton(
                 color: .secondary,
                 action: {
-                    copyToPasetboard(text: command)
+                    copyToPasetboard(text: command.command)
                     copied = true
                     withAnimation(.easeInOut(duration: 1)) { copied = false }
                 }, label: {
@@ -381,7 +381,7 @@ struct ActionButtons: View {
                 color: .secondary,
                 action: {
                     if pinnedList.contains(command) {
-                        pinnedList.removeAll(where: { $0 == command })
+                        pinnedList.removeAll(where: { $0.command == command.command })
                     } else {
                         pinnedList.append(command)
                     }
@@ -397,8 +397,8 @@ struct ActionButtons: View {
                 color: .secondary,
                 action: {
                     if let regex = try? NSRegularExpression(pattern: #"(?:"[^"]*"|'[^']*'|`[^`]*`|[^;\s&|]+)"#) {
-                        let matches = regex.matches(in: command, range: NSRange(command.startIndex..., in: command))
-                        boomList = matches.map { match in String(command[Range(match.range, in: command)!]) }
+                        let matches = regex.matches(in: command.command, range: NSRange(command.command.startIndex..., in: command.command))
+                        boomList = matches.map { match in String(command.command[Range(match.range, in: command.command)!]) }
                         boomMode = true
                     }
                 }, label: {
@@ -407,6 +407,13 @@ struct ActionButtons: View {
                         .frame(width: 14)
                         .frame(maxHeight: .infinity)
                 }).onHover { hovering in showMore = hovering }
+//            HoverButton(
+//                color: .buttonRed,
+//                action: {
+//                    // TODO
+//                }, label: {
+//                    Image(systemName: "trash")
+//                })
         }
         .onChange(of: boomList) { _ in boomMode = true }
         .sheet(isPresented: $boomMode) {
@@ -415,7 +422,7 @@ struct ActionButtons: View {
                     FlowLayout(items: boomList, spacing: 6) { item in CommandSliceView(command: item) }
                 }
                 GroupBox(label: Text("Manual Selection").font(.headline)) {
-                    Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command)))
+                    Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command.command)))
                         .font(.system(size: 11, weight: .regular, design: .monospaced))
                         .multilineTextAlignment(.leading)
                         .lineLimit(nil)
@@ -435,83 +442,7 @@ struct ActionButtons: View {
     }
 }
 
-struct CommandView: View {
-    var index: Int
-    var command: String
-    
-    @Binding var pinnedList: [String]
-    var fromMenubar: Bool = false
-    
-    @AppStorage("panelOpacity") var panelOpacity = 100
-    @AppStorage("autoClose") var autoClose = false
-    @AppStorage("autoSpace") var autoSpace = false
-    @AppStorage("autoReturn") var autoReturn = false
-    @AppStorage("buttonSide") var buttonSide = "right"
-    
-    @State private var isHovered: Bool = false
-    @State private var showMore: Bool = false
-    
-    var body: some View {
-        HStack(spacing: 6) {
-            Text((0...8).contains(index) ? "⌘\(index + 1)" : "\(index + 1)")
-                .font(.system(size: 11, weight: (0...8).contains(index) ? .bold : .regular))
-                .foregroundStyle(isHovered ? .white : .primary)
-                .padding(.horizontal, 2)
-                .lineLimit(1)
-                .minimumScaleFactor(0.3)
-                .frame(width: 26)
-                .frame(maxHeight: .infinity)
-                .background(isHovered ? Color.blue : Color.background.opacity(fromMenubar ? 1 : Double(panelOpacity) / 100))
-                .mask(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .onHover { hovering in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isHovered = hovering
-                    }
-                }
-            HStack(spacing: 0) {
-                if buttonSide == "left" {
-                    ActionButtons(command: command, showMore: $showMore, pinnedList: $pinnedList)
-                        .padding(.leading, 8)
-                }
-                Button(action: {
-                    copyToPasteboardAndPaste(text: "\(command)\(autoSpace ? " " : "")", enter: autoReturn)
-                    if autoClose {
-                        mainPanel.close()
-                        menuPopover.performClose(self)
-                    }
-                }, label: {
-                    ZStack {
-                        Color.primary.opacity(0.0001)
-                        HStack {
-                            Text(AttributedString(SyntaxHighlighter.shared.getHighlightedText(for: command)))
-                                .font(.system(size: 11, weight: .regular, design: .monospaced))
-                                .multilineTextAlignment(.leading)
-                                .lineLimit(showMore ? nil : 1)
-                                .padding(6)
-                                .padding(.leading, 2)
-                            Spacer()
-                        }
-                    }
-                })
-                .buttonStyle(.plain)
-                .setHotkey(index: index)
-                if buttonSide == "right" {
-                    ActionButtons(command: command, showMore: $showMore, pinnedList: $pinnedList)
-                        .padding(.trailing, 8)
-                }
-            }
-            .background(Color.background.opacity((isHovered || fromMenubar) ? 1.0 : Double(panelOpacity) / 100))
-            .frame(maxWidth: .infinity)
-            .overlay {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .stroke(.blue, lineWidth: isHovered ? 2 : 0)
-                    .padding(1)
-            }
-            .mask(RoundedRectangle(cornerRadius: 5, style: .continuous))
-            .onHover { hovering in isHovered = hovering }
-        }
-    }
-}
+
 
 struct CommandSliceView: View {
     var command: String
@@ -688,4 +619,8 @@ struct SearchField: NSViewRepresentable {
             searchField.appearance = NSAppearance(named: .vibrantLight)
         }
     }
+}
+
+#Preview {
+    ContentView()
 }

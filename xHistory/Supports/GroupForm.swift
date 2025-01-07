@@ -26,7 +26,7 @@ struct HoverButton<Content: View>: View {
 }
 
 struct SForm<Content: View>: View {
-    var spacing: CGFloat = 30
+    var spacing: CGFloat = 15
     var noSpacer: Bool = false
     @ViewBuilder let content: () -> Content
     
@@ -49,7 +49,7 @@ struct SGroupBox<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        GroupBox(label: label != nil ? Text(label!).font(.headline) : nil) {
+        GroupBox(label: label != nil ? Text(label!).font(.headline).padding(.bottom, 6) : nil) {
             VStack(spacing: 10) { content() }.padding(5)
         }
     }

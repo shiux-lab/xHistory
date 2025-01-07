@@ -53,6 +53,7 @@ struct xHistoryApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNotificationCenterDelegate {
     @AppStorage("statusIconName") var statusIconName = "menuBar"
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
+    @AppStorage("isOhmyzsh") var isOhmyzsh = false
     @AppStorage("statusBar") var statusBar = true
     //@AppStorage("showPinned") var showPinned = false
     @AppStorage("buttonSide") var buttonSide = "right"
@@ -118,6 +119,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
                 historyFile = "~/.bash_history"
             }
         }
+        if fd.fileExists(atPath: "~/.oh-my-zsh".absolutePath) {
+            isOhmyzsh = true
+        }
     }
     
     @objc func togglePopover(_ sender: Any?) {
@@ -144,7 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {//, UNUserNo
         _ = queue?.addURL(historyFile.absolutePath.url)
         
         for cmd in HistoryCopyer.shared.readHistory() {
-            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd) { _ in }
+            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd.command) { _ in }
         }
         
         mainPanel.title = "xHistory Panel".local

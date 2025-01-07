@@ -18,7 +18,7 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
     var needArchive: Bool = false
     var lastUpdate = Date().timeIntervalSince1970
     
-    @Published var historys: [String] = []
+    @Published var historys: [CommandItem] = []
     @AppStorage("historyFile") var historyFile = "~/.bash_history"
     @AppStorage("cloudSync") var cloudSync = false
     @AppStorage("cloudDirectory") var cloudDirectory = ""
@@ -38,7 +38,7 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         }
     }
     
-    func readHistory(file: String? = nil) -> [String] {
+    func readHistory(file: String? = nil) -> [CommandItem] {
         @AppStorage("historyFile") var historyFile = "~/.bash_history"
         @AppStorage("noSameLine") var noSameLine = true
         @AppStorage("preFormatter") var preFormatter = ""
@@ -53,8 +53,22 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         let regexBlock = blockedItems.filter({ $0.startsWith(character: "#") }).map({ String($0.dropFirst()) })
         lines.removeAll(where: { normalBlock.contains($0) })
         lines = filterNonMatchingStrings(regexList: regexBlock, stringList: lines)
-        if noSameLine { return lines.removingAdjacentDuplicates() }
-        return lines
+        let newLines = lines.map{matchCommand(command: $0)}
+        if noSameLine { return newLines.removingAdjacentDuplicates() }
+        return newLines
+    }
+    
+    /// 匹配命令并返回CommandItem
+    /// - Parameter command: 命令
+    /// - Returns: CommandItem
+    private func matchCommand(command: String) -> CommandItem {
+        var commandItem: CommandItem
+        if let results = command.wholeMatch(of: /.*(\d{10}).*;(.*)/) {
+            commandItem = CommandItem(timestamp: Double(results.1)!, command: String(results.2))
+        } else {
+            commandItem = CommandItem(command: command)
+        }
+        return commandItem
     }
     
     func updateHistory(file: String? = nil) {
@@ -70,7 +84,7 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
         HistoryCopyer.shared.historys.removeAll()
         HistoryCopyer.shared.updateHistory()
         for cmd in HistoryCopyer.shared.readHistory() {
-            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd) { _ in }
+            SyntaxHighlighter.shared.getHighlightedTextAsync(for: cmd.command) { _ in }
         }
     }
     
@@ -91,6 +105,7 @@ class HistoryCopyer: ObservableObject, SFSMonitorDelegate {
     }
 }
 
+/// 去除对象数组中相邻的重复元素
 extension Array where Element: Equatable {
     func removingAdjacentDuplicates() -> [Element] {
         reduce(into: []) { result, element in
@@ -110,8 +125,8 @@ extension Array where Element == String {
                 let range = NSRange(element.startIndex..<element.endIndex, in: element)
                 
                 if let match = regex.firstMatch(in: element, options: [], range: range),
-                   match.numberOfRanges > 1,  // 确保捕获组范围存在
-                   let commandRange = Range(match.range(at: 1), in: element) {
+                    match.numberOfRanges > 1,  // 确保捕获组范围存在
+                    let commandRange = Range(match.range(at: 1), in: element) {
                     return String(element[commandRange])
                 }
                 
