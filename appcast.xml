@@ -3,6 +3,28 @@
     <channel>
         <title>xHistory</title>
         <item>
+            <title>v0.1.6</title>
+            <pubDate>Tue, 07 Jan 2025 11:19:41 +0800</pubDate>
+            <sparkle:version>16</sparkle:version>
+            <sparkle:shortVersionString>0.1.6</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>ul{margin-top: 0;margin-bottom: 7;padding-left: 18;}</style><ul>
+                <li>修复了部分已知的问题.</li>
+                <li>添加了 zh-Hant 本地化翻译.</li>
+                </ul><ul>
+                <li>Fixed some known issues.</li>
+                <li>Added <b>zh-Hant</b> localization.</li>
+                </ul><img src="https://github.com/lihaoyun6/xHistory/raw/main/img/donate.png" width="280"/>
+            ]]></description>
+            <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.6/xHistory_v0.1.6.dmg" length="3820902" type="application/octet-stream" sparkle:edSignature="4pun8RqTcsnJeJTkzJzgf7qM4/OpbXAtXizNVAF2zzl4lrvt+uL4oIFnEKstKXkDeos1GBu58G2HqhSnFqchBA=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.6/xUpdate16-15.delta" sparkle:deltaFrom="15" length="473570" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="q/c87HeZIG+EdlWC2fEo53jxnSLrz2KIO8sbemLibEyBWYZo2NBLLvEbHqQc1uCPjHJGmAcUC+s1YMEp72AeDA=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.6/xUpdate16-14.delta" sparkle:deltaFrom="14" length="494906" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="FZW1+NPutKmnMru0wS9cyJgzaOIETEbzBm/EFuvzjfBTdI4IiJXl9TrNtdtGl8E75R66iOF/K6CbE6PA2n9WDQ=="/>
+                <enclosure url="https://github.com/lihaoyun6/xHistory/releases/download/0.1.6/xUpdate16-13.delta" sparkle:deltaFrom="13" length="564098" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="864752" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,en" sparkle:edSignature="SOkH2yAmPEPTzi06pnVHXMmVlm6XonQQHZF93hauPlzd1CWjw3qS16r1AfOEzpfS2/QB9AMmG+RqR6xbHVoQBA=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>v0.1.5</title>
             <pubDate>Sun, 24 Nov 2024 00:16:44 +0800</pubDate>
             <sparkle:version>15</sparkle:version>
